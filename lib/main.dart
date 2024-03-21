@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/widgets/message_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -57,6 +58,13 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            const SizedBox(height: 20), // Un espace entre le compteur et le widget de message
+            MessageWidget(
+              isUser: true, // ou false pour voir le style de l'interlocuteur
+              messageText: 'Hello! This is a test message jdzhuidhzuihdzufesgfybfyubefyubseyufbyuesbyufsbeybfsyeubfyubhduizhduizhduzhduizhdu.',
+              profilePicUrl: 'https://via.placeholder.com/150', // Remplacez par une URL valide
+              timestamp: '10:45 AM',
+            ),
           ],
         ),
       ),
@@ -64,7 +72,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
