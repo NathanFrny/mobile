@@ -15,12 +15,12 @@ class ConnexionButton extends StatelessWidget {
         }
       },
       style: ElevatedButton.styleFrom(
-        primary: const Color.fromRGBO(49, 66, 218, 1), // Couleur de fond du bouton
+        primary: const Color.fromRGBO(50, 66, 218, 1), // Couleur de fond du bouton
         onPrimary: Colors.white, // Couleur du texte
         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20), // Padding du bouton
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(34), // Bord arrondi du bouton
-          side: const BorderSide(color: Color.fromRGBO(0, 0, 0, 1), width: 3.0), // Bordure du bouton avec une épaisseur de 2.0
+          side: const BorderSide(color: Color.fromRGBO(0, 0, 0, 1), width: 2.0), // Bordure du bouton avec une épaisseur de 2.0
         ),
       ),
       child: const Text(

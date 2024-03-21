@@ -20,7 +20,7 @@ class RegisterButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 52, vertical: 18), // Padding du bouton
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(34), // Bord arrondi du bouton
-          side: const BorderSide(color: Color.fromRGBO(0, 0, 0, 1), width: 3.0), // Bordure du bouton avec une épaisseur de 2.0
+          side: const BorderSide(color: Color.fromRGBO(0, 0, 0, 1), width: 2.0), // Bordure du bouton avec une épaisseur de 2.0
         ),
       ),
       child: const Text(
