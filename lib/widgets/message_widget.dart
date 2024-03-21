@@ -23,11 +23,18 @@ class MessageWidget extends StatelessWidget {
 
     return Row(
       mainAxisAlignment: isUser ? MainAxisAlignment.start : MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (isUser)
           CircleAvatar(
             backgroundImage: NetworkImage(profilePicUrl),
+          ),
+        if (!isUser)
+          Text(
+            timestamp,
+            style: TextStyle(
+              fontSize: 10,
+            ),
           ),
         Padding(
           padding: const EdgeInsets.all(7.0),
@@ -37,6 +44,13 @@ class MessageWidget extends StatelessWidget {
         if (!isUser)
           CircleAvatar(
             backgroundImage: NetworkImage(profilePicUrl),
+          ),
+        if (isUser)
+          Text(
+            timestamp,
+            style: TextStyle(
+              fontSize: 10,
+            ),
           ),
       ],
     );
