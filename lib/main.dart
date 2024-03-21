@@ -34,6 +34,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   final List<Map<String, dynamic>> messages = [
     {
       "isUser": false,
@@ -50,17 +52,25 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: ListView.builder(
-        itemCount: messages.length,
-        itemBuilder: (context, index) {
+      body: AnimatedList(
+        key: _listKey,
+        initialItemCount: messages.length,
+        itemBuilder: (context, index, animation) {
           final message = messages[index];
-          return MessageWidget(
-            isUser: message["isUser"],
-            messageText: message["messageText"],
-            profilePicUrl: message["profilePicUrl"],
-            timestamp: message["timestamp"],
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: message["isUser"] ? Offset(1, 0) : Offset(-1, 0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: MessageWidget(
+              isUser: message["isUser"],
+              messageText: message["messageText"],
+              profilePicUrl: message["profilePicUrl"],
+              timestamp: message["timestamp"],
+            ),
           );
         },
+        controller: _scrollController,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -74,12 +84,24 @@ class _MyHomePageState extends State<MyHomePage> {
             String selectedMessage = sampleMessages[Random().nextInt(sampleMessages.length)];
             bool user = Random().nextBool();
 
+            final int index = messages.length;
             messages.add({
               "isUser": user,
               "messageText": selectedMessage,
-              "profilePicUrl": user ? "https://pixlr.com/images/index/ai-image-generator-three.webp" : "https://img-19.commentcamarche.net/WNCe54PoGxObY8PCXUxMGQ0Gwss=/480x270/smart/d8c10e7fd21a485c909a5b4c5d99e611/ccmcms-commentcamarche/20456790.jpg",
+              "profilePicUrl": user ? "https://img-19.commentcamarche.net/WNCe54PoGxObY8PCXUxMGQ0Gwss=/480x270/smart/d8c10e7fd21a485c909a5b4c5d99e611/ccmcms-commentcamarche/20456790.jpg" : "https://pixlr.com/images/index/ai-image-generator-three.webp",
               "timestamp": DateFormat('hh:mm a').format(DateTime.now()),
             });
+
+            _listKey.currentState?.insertItem(index);
+          });
+          Future<void>.delayed(Duration(milliseconds: 100), () {
+            if (_scrollController.hasClients) {
+              _scrollController.animateTo(
+                _scrollController.position.maxScrollExtent,
+                duration: Duration(milliseconds: 500),
+                curve: Curves.easeOut,
+              );
+            }
           });
         },
         tooltip: 'Ajouter Message',
