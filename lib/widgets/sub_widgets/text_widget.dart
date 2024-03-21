@@ -2,26 +2,28 @@ import 'package:flutter/material.dart';
 
 class TextWidget extends StatelessWidget {
   final String text;
+  final Color color;
   const TextWidget({
     super.key,
     required this.text,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(8.0), // Ajoutez un peu de padding autour du texte
+      padding: EdgeInsets.all(8.0),
       decoration: BoxDecoration(
-        color: Colors.lightBlue, // La couleur peut être ajustée selon l'émetteur
-        borderRadius: BorderRadius.circular(12.0), // Bords arrondis pour la bulle de texte
+        color: color,
+        borderRadius: BorderRadius.circular(16.0),
       ),
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.5, // Limite à la moitié de la largeur de l'écran
+          maxWidth: MediaQuery.of(context).size.width * 0.5,
         ),
         child: Text(
           text,
-          style: TextStyle(color: Colors.white), // Style du texte, ajustez selon vos besoins
+          style: TextStyle(color: Colors.white),
         ),
       ),
     );

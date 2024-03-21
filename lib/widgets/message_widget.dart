@@ -18,22 +18,26 @@ class MessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    Color textColor = isUser ? Colors.lightBlue : Colors.indigo;
+
     return Row(
-      mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+      mainAxisAlignment: isUser ? MainAxisAlignment.start : MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!isUser)
-          CircleAvatar(
-            backgroundImage: NetworkImage(profilePicUrl),
-          ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextWidget(text: messageText), // Utilisation de TextWidget ici
-        ),
         if (isUser)
           CircleAvatar(
             backgroundImage: NetworkImage(profilePicUrl),
           ),
-        // Vous pouvez ajouter plus de widgets ici, comme l'heure d'envoi
+        Padding(
+          padding: const EdgeInsets.all(7.0),
+          // Text Widget
+          child: TextWidget(text: messageText, color: textColor),
+        ),
+        if (!isUser)
+          CircleAvatar(
+            backgroundImage: NetworkImage(profilePicUrl),
+          ),
       ],
     );
   }
