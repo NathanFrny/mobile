@@ -16,7 +16,7 @@ class RegisterButton extends StatelessWidget {
       },
       style: ElevatedButton.styleFrom(
         primary: const Color.fromRGBO(255, 255, 255, 1), // Couleur de fond du bouton
-        onPrimary: Colors.white, // Couleur du texte
+        onPrimary: Colors.black, // Couleur du texte
         padding: const EdgeInsets.symmetric(horizontal: 52, vertical: 18), // Padding du bouton
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(34), // Bord arrondi du bouton
