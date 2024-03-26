@@ -17,7 +17,7 @@ class _ConversationState extends State<Conversation> {
   final List<Map<String, dynamic>> messages = [
     {
       "isUser": false,
-      "messageText": "Bonjour !",
+      "messageText": "Salut !",
       "profilePicUrl": "https://example.com/image1.jpg",
       "timestamp": "10:45 AM",
     },
@@ -33,7 +33,9 @@ class _ConversationState extends State<Conversation> {
             final message = messages[index];
             return SlideTransition(
               position: Tween<Offset>(
-                begin: message["isUser"] ? const Offset(1, 0) : const Offset(-1, 0),
+                begin: message["isUser"]
+                    ? const Offset(1, 0)
+                    : const Offset(-1, 0),
                 end: Offset.zero,
               ).animate(animation),
               child: MessageWidget(
