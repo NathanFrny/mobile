@@ -84,7 +84,7 @@ class _ConversationState extends State<Conversation> {
             });
           },
           tooltip: 'Ajouter Message',
-          child: const Icon(Icons.add),
+          child: Icon(Icons.add),
         ));
   }
 }
