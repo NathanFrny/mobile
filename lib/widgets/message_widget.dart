@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:mobile/widgets/sub_widgets/text_widget.dart';
 
 class MessageWidget extends StatelessWidget {
@@ -9,12 +8,12 @@ class MessageWidget extends StatelessWidget {
   final String timestamp;
 
   const MessageWidget({
-    Key? key,
+    super.key,
     required this.isUser,
     required this.messageText,
     required this.profilePicUrl,
     required this.timestamp,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +31,7 @@ class MessageWidget extends StatelessWidget {
         if (!isUser)
           Text(
             timestamp,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 10,
             ),
           ),
@@ -48,7 +47,7 @@ class MessageWidget extends StatelessWidget {
         if (isUser)
           Text(
             timestamp,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 10,
             ),
           ),

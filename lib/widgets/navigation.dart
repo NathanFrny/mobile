@@ -81,7 +81,7 @@ class _NavigationState extends State<Navigation> {
           ),
         ),
 
-        Conversation(),
+        const Conversation(),
 
         /// Messages page
         // ListView.builder(

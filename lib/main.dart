@@ -1,10 +1,6 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:mobile/widgets/message_widget.dart';
 
-import 'routes/conversation.dart';
 import 'widgets/navigation.dart';
 
 void main() => runApp(const App());

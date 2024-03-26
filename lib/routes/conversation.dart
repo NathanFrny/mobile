@@ -33,7 +33,7 @@ class _ConversationState extends State<Conversation> {
             final message = messages[index];
             return SlideTransition(
               position: Tween<Offset>(
-                begin: message["isUser"] ? Offset(1, 0) : Offset(-1, 0),
+                begin: message["isUser"] ? const Offset(1, 0) : const Offset(-1, 0),
                 end: Offset.zero,
               ).animate(animation),
               child: MessageWidget(
@@ -71,11 +71,11 @@ class _ConversationState extends State<Conversation> {
 
               _listKey.currentState?.insertItem(index);
             });
-            Future<void>.delayed(Duration(milliseconds: 100), () {
+            Future<void>.delayed(const Duration(milliseconds: 100), () {
               if (_scrollController.hasClients) {
                 _scrollController.animateTo(
                   _scrollController.position.maxScrollExtent,
-                  duration: Duration(milliseconds: 500),
+                  duration: const Duration(milliseconds: 500),
                   curve: Curves.easeOut,
                 );
               }
