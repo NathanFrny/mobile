@@ -1,10 +1,10 @@
 # mobile
 
-
 ## Documentation
+
 ### Comment ajouter un message ?
 
-Exemple de création d'un message :  
+Exemple de création d'un message :
 
 ```dart
 const MessageWidget(
@@ -19,4 +19,8 @@ Paramètre possible dans un message :
 isUser = Si c'est l'utilisateur le message s'affichera à gauche en bleu clair sinon à droite en indigo.  
 messageText = Le contenu du message.  
 profilePicUrl = l'URL en ligne de la photo de profil de l'utilisateur.  
-timestamp = L'heure à laquelle le message a été envoyé.  
+timestamp = L'heure à laquelle le message a été envoyé.
+
+- Florient Artu
+- Noah Bonnel
+- Nathan Fourny
