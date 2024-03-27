@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile/register_page.dart';
 
 class ConnexionButton extends StatelessWidget {
   const ConnexionButton({super.key});
@@ -12,15 +13,21 @@ class ConnexionButton extends StatelessWidget {
         // Par exemple : afficher un message dans la console
         if (kDebugMode) {
           print('Bouton de connexion appuyé');
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const RegisterPage()));
         }
       },
       style: ElevatedButton.styleFrom(
-        primary: const Color.fromRGBO(50, 66, 218, 1), // Couleur de fond du bouton
-        onPrimary: Colors.white, // Couleur du texte
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20), // Padding du bouton
+        foregroundColor: Colors.white,
+        backgroundColor:
+            const Color.fromRGBO(50, 66, 218, 1), // Couleur du texte
+        padding: const EdgeInsets.symmetric(
+            horizontal: 40, vertical: 20), // Padding du bouton
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(34), // Bord arrondi du bouton
-          side: const BorderSide(color: Color.fromRGBO(0, 0, 0, 1), width: 2.0), // Bordure du bouton avec une épaisseur de 2.0
+          side: const BorderSide(
+              color: Color.fromRGBO(0, 0, 0, 1),
+              width: 2.0), // Bordure du bouton avec une épaisseur de 2.0
         ),
       ),
       child: const Text(
