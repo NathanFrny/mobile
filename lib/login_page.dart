@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:appwrite/appwrite.dart';
 
@@ -22,6 +23,7 @@ class _LoginPageState extends State<LoginPage> {
         .setProject('66009da23c66a5968ef9')
         .setSelfSigned(status: true);
     _account = Account(_client);
+    _account.deleteSession(sessionId: 'current');
   }
 
   Future<void> _loginUser() async {
@@ -32,8 +34,11 @@ class _LoginPageState extends State<LoginPage> {
       );
       // Connexion réussie
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Connexion réussie'),
+        content: Text('Connexion réussie '),
       ));
+      if (kDebugMode) {
+        print(result);
+      }
     } catch (e) {
       // Gestion des erreurs de connexion
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
