@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile/register_page.dart';
+import 'package:mobile/login_page.dart';
 
 class ConnexionButton extends StatelessWidget {
   const ConnexionButton({super.key});
@@ -13,8 +13,8 @@ class ConnexionButton extends StatelessWidget {
         // Par exemple : afficher un message dans la console
         if (kDebugMode) {
           print('Bouton de connexion appuyé');
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const RegisterPage()));
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) => const LoginPage()));
         }
       },
       style: ElevatedButton.styleFrom(
