@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:appwrite/appwrite.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  _RegisterPageState createState() => _RegisterPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
-  final TextEditingController _pseduoController = TextEditingController();
+class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   late Client _client;
@@ -25,20 +24,20 @@ class _RegisterPageState extends State<RegisterPage> {
     _account = Account(_client);
   }
 
-  Future<void> _registerUser() async {
+  Future<void> _loginUser() async {
     try {
-      await _account.create(
+      final result = await _account.createEmailPasswordSession(
         email: _emailController.text,
         password: _passwordController.text,
-        name: _pseduoController.text,
-        userId: 'unique()',
       );
+      // Connexion réussie
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Inscription réussie'),
+        content: Text('Connexion réussie'),
       ));
     } catch (e) {
+      // Gestion des erreurs de connexion
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Erreur d\'inscription : $e'),
+        content: Text('Erreur de connexion : $e'),
       ));
     }
   }
@@ -46,15 +45,11 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Inscription')),
+      appBar: AppBar(title: const Text('Connexion')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _pseduoController,
-              decoration: const InputDecoration(labelText: 'Pseudo'),
-            ),
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
@@ -66,8 +61,8 @@ class _RegisterPageState extends State<RegisterPage> {
               obscureText: true,
             ),
             ElevatedButton(
-              onPressed: _registerUser,
-              child: const Text('S\'inscrire'),
+              onPressed: _loginUser,
+              child: const Text('Connexion'),
             ),
           ],
         ),
