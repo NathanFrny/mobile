@@ -19,9 +19,8 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _client = Client()
-        .setEndpoint('https://appwrite.thimotebois.ovh:9443/v1')
-        .setProject('66009da23c66a5968ef9')
-        .setSelfSigned(status: true);
+        .setEndpoint('https://appwrite.thimotebois.ovh/v1')
+        .setProject('66178c2b1086e66b625a');
     _account = Account(_client);
     _account.deleteSession(sessionId: 'current');
   }
