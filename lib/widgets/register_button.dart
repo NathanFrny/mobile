@@ -13,9 +13,9 @@ class RegisterButton extends StatelessWidget {
         // Par exemple : afficher un message dans la console
         if (kDebugMode) {
           print('Bouton d\'inscription appuyé');
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const RegisterPage()));
         }
+        Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const RegisterPage()));
       },
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.black,

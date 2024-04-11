@@ -13,9 +13,9 @@ class ConnexionButton extends StatelessWidget {
         // Par exemple : afficher un message dans la console
         if (kDebugMode) {
           print('Bouton de connexion appuyé');
-          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => const LoginPage()));
         }
+        Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => const LoginPage()));
       },
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
