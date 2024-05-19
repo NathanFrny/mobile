@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile/login_page.dart';
+import 'package:mobile/pages/login_page.dart';
 
 class ConnexionButton extends StatelessWidget {
   const ConnexionButton({super.key});

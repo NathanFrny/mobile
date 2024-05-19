@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile/register_page.dart';
+import 'package:mobile/pages/register_page.dart';
 
 class RegisterButton extends StatelessWidget {
   const RegisterButton({super.key});
