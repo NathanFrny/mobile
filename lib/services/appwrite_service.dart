@@ -104,6 +104,9 @@ class AppwriteService {
     }
   }
 
+  // Récupération du nom de l'utilisateur actuellement connecté
+  //
+  // Return : Nom de l'utilisateur
   Future<String> getCurrentUserName() async {
     try {
       final user = await _account.get();
@@ -113,6 +116,9 @@ class AppwriteService {
     }
   }
 
+  // Récupération de l'ID de l'utilisateur actuellement connecté
+  //
+  // Return : ID de l'utilisateur
   Future<String> getCurrentUserId() async {
     try {
       final user = await _account.get();
@@ -122,14 +128,263 @@ class AppwriteService {
           'Erreur lors de la récupération de l\'ID utilisateur : $e');
     }
   }
-}
 
+  // Récupération de la Date de création d'un utilisateur dans la base de données Users
+  //
+  // Return : Date de création de l'utilisateur formatée en String au format 'JJ/MM/AAAA - HH:MM:SS'
+  Future<String> getCurrentUserCreationDate(String userID) async {
+    try {
+      final userDocument = await getUserByID(userID);
+      final dateCreation = userDocument.data['Date_creation'];
+      final dateCreationFormatted = DateTime.parse(dateCreation);
+      return dateCreationFormatted.toString();
+    } catch (e) {
+      throw Exception(
+          'Erreur lors de la récupération de la date de création de l\'utilisateur : $e');
+    }
+  }
+
+  // Récupération des channels d'un utilisateur dans la base de données Users
+  //
+  // Return : Liste des channels de l'utilisateur
+  Future<List<dynamic>> getUserChannels(String userID) async {
+    try {
+      final userDocument = await getUserByID(userID);
+      return userDocument.data['Channel'];
+    } catch (e) {
+      throw Exception(
+          'Erreur lors de la récupération des channels de l\'utilisateur : $e');
+    }
+  }
+
+  // Récupération de la PP d'un utilisateur dans la base de données Users
+  //
+  // Return : URL de la PP de l'utilisateur
+  Future<String> getUserPP(String userID) async {
+    try {
+      final userDocument = await getUserByID(userID);
+      return userDocument.data['PP'];
+    } catch (e) {
+      throw Exception(
+          'Erreur lors de la récupération de la PP de l\'utilisateur : $e');
+    }
+  }
+
+  // Modification de la PP d'un utilisateur dans la base de données Users
+  // Param :
+  // - userID : ID de l'utilisateur
+  // - pp : URL de la PP
+  Future<void> setUserPP(String userID, String pp) async {
+    try {
+      await _databases.updateDocument(
+        databaseId: databaseID,
+        collectionId: collectionUsersID,
+        documentId: userID,
+        data: {
+          'URL_PP': pp,
+        },
+      );
+    } catch (e) {
+      throw Exception(
+          'Erreur lors de la modification de la PP de l\'utilisateur : $e');
+    }
+  }
+
+  // Ajouts d'un channel à la liste des channels d'un utilisateur dans la base de données Users
+  // Param :
+  // - userID : ID de l'utilisateur
+  // - channelID : ID du channel
+  Future<void> addUserChannel(String userID, String channelID) async {
+    try {
+      final userDocument = await getUserByID(userID);
+      final channels = userDocument.data['Channel'];
+      channels.add(channelID);
+
+      await _databases.updateDocument(
+        databaseId: databaseID,
+        collectionId: collectionUsersID,
+        documentId: userID,
+        data: {
+          'Channel': channels,
+        },
+      );
+    } catch (e) {
+      throw Exception(
+          'Erreur lors de l\'ajout du channel à la liste des channels de l\'utilisateur : $e');
+    }
+  }
+
+  // Suppression d'un channel de la liste des channels d'un utilisateur dans la base de données Users
+  // Param :
+  // - userID : ID de l'utilisateur
+  // - channelID : ID du channel
+  Future<void> removeUserChannel(String userID, String channelID) async {
+    try {
+      final userDocument = await getUserByID(userID);
+      final channels = userDocument.data['Channel'];
+      channels.remove(channelID);
+
+      await _databases.updateDocument(
+        databaseId: databaseID,
+        collectionId: collectionUsersID,
+        documentId: userID,
+        data: {
+          'Channel': channels,
+        },
+      );
+    } catch (e) {
+      throw Exception(
+          'Erreur lors de la suppression du channel de la liste des channels de l\'utilisateur : $e');
+    }
+  }
 
 // ---------------------------
 //  Gestion des messages
 // ---------------------------
 
+// Création d'un message et enregistrement dans la base de données Messages
+// Param :
+// - messageID : ID du message
+// - UserID : ID de l'utilisateur
+// - DateHeure : Date et heure du message
+// - Contenu : Contenu du message
+// - ChannelID : ID du channel
+  Future<void> createMessage(String messageID, String userID, String dateHeure,
+      String contenu, String channelID) async {
+    try {
+      await _databases.createDocument(
+        databaseId: databaseID,
+        collectionId: collectionMessagesID,
+        documentId: messageID,
+        data: {
+          'ID': messageID,
+          'UserID': userID,
+          'DateHeure': dateHeure,
+          'Contenu': contenu,
+          'ChannelID': channelID,
+        },
+      );
+    } catch (e) {
+      throw Exception('Erreur lors de la création du message : $e');
+    }
+  }
 
 //---------------------------
 //  Gestion des channels
 // ---------------------------
+
+  // Création d'un channel et enregistrement dans la base de données Channels
+  // Param :
+  // - channelID : ID du channel
+  // - channelNom : Nom du channel
+  Future<void> createChannel(String channelID, String channelNom) async {
+    try {
+      await _databases.createDocument(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+        documentId: channelID,
+        data: {
+          'ID': channelID,
+          'Nom': channelNom,
+        },
+      );
+    } catch (e) {
+      throw Exception('Erreur lors de la création du channel : $e');
+    }
+  }
+
+  // Ajout d'un utilisateur à un channel dans la base de données Channels
+  // Param :
+  // - userID : ID de l'utilisateur
+  // - channelID : ID du channel
+  Future<void> addUserToChannel(String userID, String channelID) async {
+    try {
+      final channelDocument = await _databases.getDocument(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+        documentId: channelID,
+      );
+      final users = channelDocument.data['UsersID'];
+      users.add(userID);
+
+      await _databases.updateDocument(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+        documentId: channelID,
+        data: {
+          'UsersID': users,
+        },
+      );
+    } catch (e) {
+      throw Exception(
+          'Erreur lors de l\'ajout de l\'utilisateur au channel : $e');
+    }
+  }
+
+  // Suppression d'un utilisateur d'un channel dans la base de données Channels
+  // Param :
+  // - userID : ID de l'utilisateur
+  // - channelID : ID du channel
+  Future<void> removeUserFromChannel(String userID, String channelID) async {
+    try {
+      final channelDocument = await _databases.getDocument(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+        documentId: channelID,
+      );
+      final users = channelDocument.data['UsersID'];
+      users.remove(userID);
+
+      await _databases.updateDocument(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+        documentId: channelID,
+        data: {
+          'UsersID': users,
+        },
+      );
+    } catch (e) {
+      throw Exception(
+          'Erreur lors de la suppression de l\'utilisateur du channel : $e');
+    }
+  }
+
+  // Changement du nom d'un channel dans la base de données Channels
+  // Param :
+  // - channelID : ID du channel
+  // - channelNom : Nouveau nom du channel
+  Future<void> changeChannelName(String channelID, String channelNom) async {
+    try {
+      await _databases.updateDocument(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+        documentId: channelID,
+        data: {
+          'Nom': channelNom,
+        },
+      );
+    } catch (e) {
+      throw Exception('Erreur lors du changement du nom du channel : $e');
+    }
+  }
+
+  // Change de la PP d'un channel dans la base de données Channels
+  // Param :
+  // - channelID : ID du channel
+  // - pp : URL de la PP
+  Future<void> setChannelPP(String channelID, String pp) async {
+    try {
+      await _databases.updateDocument(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+        documentId: channelID,
+        data: {
+          'URL_PP': pp,
+        },
+      );
+    } catch (e) {
+      throw Exception(
+          'Erreur lors de la modification de la PP du channel : $e');
+    }
+  }
+}
