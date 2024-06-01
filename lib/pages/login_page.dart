@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:mobile/pages/test_page.dart';
+import 'package:mobile/routes/conversation.dart';
 import '../services/appwrite_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -27,7 +28,7 @@ class _LoginPageState extends State<LoginPage> {
         const SnackBar(content: Text('Connexion réussie')),
       );
       Navigator.of(context)
-          .push(MaterialPageRoute(builder: (context) => const TestPage()));
+          .push(MaterialPageRoute(builder: (context) => const Conversation()));
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur de connexion : $e')),
