@@ -211,7 +211,7 @@ class AppwriteService {
   // Param :
   // - userID : ID de l'utilisateur
   // - channelID : ID du channel
-  Future<void> addUserChannel(String userID, String channelID) async {
+  Future<void> addUserChannel(String userID, int channelID) async {
     try {
       final userDocument = await getUserByID(userID);
       final channels = userDocument.data['Channel'];
@@ -235,7 +235,7 @@ class AppwriteService {
   // Param :
   // - userID : ID de l'utilisateur
   // - channelID : ID du channel
-  Future<void> removeUserChannel(String userID, String channelID) async {
+  Future<void> removeUserChannel(String userID, int channelID) async {
     try {
       final userDocument = await getUserByID(userID);
       final channels = userDocument.data['Channel'];
@@ -267,7 +267,7 @@ class AppwriteService {
 // - Contenu : Contenu du message
 // - ChannelID : ID du channel
   Future<void> createMessage(String messageID, String userID, String dateHeure,
-      String contenu, String channelID) async {
+      String contenu, int channelID) async {
     try {
       await _databases.createDocument(
         databaseId: databaseID,
@@ -294,12 +294,12 @@ class AppwriteService {
   // Param :
   // - channelID : ID du channel
   // - channelNom : Nom du channel
-  Future<void> createChannel(String channelID, String channelNom) async {
+  Future<void> createChannel(int channelID, String channelNom) async {
     try {
       await _databases.createDocument(
         databaseId: databaseID,
         collectionId: collectionChannelsID,
-        documentId: channelID,
+        documentId: channelID.toString(),
         data: {
           'ID': channelID,
           'Nom': channelNom,
@@ -310,16 +310,48 @@ class AppwriteService {
     }
   }
 
+  // Récupère le nombre total de channel
+  Future<int> getChannelCount() async {
+    try {
+      final response = await _databases.listDocuments(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+      );
+      return response.total;
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération du nombre total de channels : $e');
+    }
+  }
+
+  // Récupérer un channel en fonction de son ID
+  // Param :
+  // - channelID: ID du channel
+  Future<Map<String, dynamic>> getChannelById(int channelId) async {
+    try {
+      final document = await _databases.getDocument(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+        documentId: channelId.toString(),
+      );
+      return {
+        'id': document.$id,
+        'name': document.data['Nom'],
+      };
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération du channel : $e');
+    }
+  }
+
   // Ajout d'un utilisateur à un channel dans la base de données Channels
   // Param :
   // - userID : ID de l'utilisateur
   // - channelID : ID du channel
-  Future<void> addUserToChannel(String userID, String channelID) async {
+  Future<void> addUserToChannel(String userID, int channelID) async {
     try {
       final channelDocument = await _databases.getDocument(
         databaseId: databaseID,
         collectionId: collectionChannelsID,
-        documentId: channelID,
+        documentId: channelID.toString(),
       );
       final users = channelDocument.data['UsersID'];
       users.add(userID);
@@ -327,7 +359,7 @@ class AppwriteService {
       await _databases.updateDocument(
         databaseId: databaseID,
         collectionId: collectionChannelsID,
-        documentId: channelID,
+        documentId: channelID.toString(),
         data: {
           'UsersID': users,
         },
@@ -342,12 +374,12 @@ class AppwriteService {
   // Param :
   // - userID : ID de l'utilisateur
   // - channelID : ID du channel
-  Future<void> removeUserFromChannel(String userID, String channelID) async {
+  Future<void> removeUserFromChannel(String userID, int channelID) async {
     try {
       final channelDocument = await _databases.getDocument(
         databaseId: databaseID,
         collectionId: collectionChannelsID,
-        documentId: channelID,
+        documentId: channelID.toString(),
       );
       final users = channelDocument.data['UsersID'];
       users.remove(userID);
@@ -355,7 +387,7 @@ class AppwriteService {
       await _databases.updateDocument(
         databaseId: databaseID,
         collectionId: collectionChannelsID,
-        documentId: channelID,
+        documentId: channelID.toString(),
         data: {
           'UsersID': users,
         },
@@ -370,12 +402,12 @@ class AppwriteService {
   // Param :
   // - channelID : ID du channel
   // - channelNom : Nouveau nom du channel
-  Future<void> changeChannelName(String channelID, String channelNom) async {
+  Future<void> changeChannelName(int channelID, String channelNom) async {
     try {
       await _databases.updateDocument(
         databaseId: databaseID,
         collectionId: collectionChannelsID,
-        documentId: channelID,
+        documentId: channelID.toString(),
         data: {
           'Nom': channelNom,
         },
@@ -389,12 +421,12 @@ class AppwriteService {
   // Param :
   // - channelID : ID du channel
   // - pp : URL de la PP
-  Future<void> setChannelPP(String channelID, String pp) async {
+  Future<void> setChannelPP(int channelID, String pp) async {
     try {
       await _databases.updateDocument(
         databaseId: databaseID,
         collectionId: collectionChannelsID,
-        documentId: channelID,
+        documentId: channelID.toString(),
         data: {
           'URL_PP': pp,
         },

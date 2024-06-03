@@ -38,7 +38,7 @@ class _NavigationState extends State<Navigation> {
               label: Text('2'),
               child: Icon(Icons.messenger_sharp),
             ),
-            label: 'Messages',
+            label: 'Channels',
           ),
         ],
       ),
