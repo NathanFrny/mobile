@@ -70,11 +70,26 @@ class AppwriteService {
   // Suppression de la session actuelle
   Future<void> deleteSession() async {
     try {
-      await _account.deleteSession(
-        sessionId: 'current',
-      );
+      // Vérifiez si une session existe
+      try {
+        await _account.getSession(sessionId: 'current');
+      } catch (e) {
+        if (e == 404) {
+          return;
+        } else {
+          throw Exception('Erreur lors de la vérification de la session : $e');
+        }
+      }
+
+      try {
+        await _account.deleteSession(
+          sessionId: 'current',
+        );
+      } catch (e) {
+        throw Exception('Erreur lors de la suppression de la session : $e');
+      }
     } catch (e) {
-      throw Exception('Erreur lors de la suppression de la session : $e');
+      throw Exception('Erreur générale : $e');
     }
   }
 
