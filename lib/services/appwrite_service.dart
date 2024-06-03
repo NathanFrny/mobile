@@ -1,5 +1,6 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
+import 'package:flutter/foundation.dart';
 
 class AppwriteService {
   late Client _client;
@@ -69,24 +70,25 @@ class AppwriteService {
 
   // Suppression de la session actuelle
   Future<void> deleteSession() async {
+    if (kDebugMode) {
+      print("Suppression de la session");
+    }
     try {
-      // Vérifiez si une session existe
       try {
         await _account.getSession(sessionId: 'current');
-      } catch (e) {
-        if (e == 404) {
+      } on AppwriteException catch (e) {
+        if (e.code == 401) {
           return;
         } else {
-          throw Exception('Erreur lors de la vérification de la session : $e');
+          throw Exception(
+              'Erreur lors de la vérification de la session : ${e.message}');
         }
       }
-
       try {
-        await _account.deleteSession(
-          sessionId: 'current',
-        );
-      } catch (e) {
-        throw Exception('Erreur lors de la suppression de la session : $e');
+        await _account.deleteSession(sessionId: 'current');
+      } on AppwriteException catch (e) {
+        throw Exception(
+            'Erreur lors de la suppression de la session : ${e.message}');
       }
     } catch (e) {
       throw Exception('Erreur générale : $e');
