@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'package:mobile/routes/conversation.dart';
+import 'package:mobile/routes/channel.dart';
 
 class Navigation extends StatefulWidget {
   const Navigation({super.key});
@@ -81,7 +80,7 @@ class _NavigationState extends State<Navigation> {
           ),
         ),
 
-        const Conversation(),
+        const Channel(),
 
         /// Messages page
         // ListView.builder(
