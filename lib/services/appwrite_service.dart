@@ -121,6 +121,29 @@ class AppwriteService {
     }
   }
 
+  // Récupération de l'id d'un user en fonction de son pseudo
+  // Params:
+  // - username: pseudo du user
+  Future<String> getUserIdByUsername(String username) async {
+    try {
+      final response = await _databases.listDocuments(
+        databaseId: databaseID,
+        collectionId: collectionUsersID,
+        queries: [
+          Query.equal('Nom', username),
+        ],
+      );
+
+      if (response.documents.isNotEmpty) {
+        return response.documents.first.$id;
+      } else {
+        throw Exception('Utilisateur non trouvé');
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération de l\'ID utilisateur : $e');
+    }
+  }
+
   // Récupération du nom de l'utilisateur actuellement connecté
   //
   // Return : Nom de l'utilisateur
@@ -259,30 +282,73 @@ class AppwriteService {
 //  Gestion des messages
 // ---------------------------
 
-// Création d'un message et enregistrement dans la base de données Messages
-// Param :
-// - messageID : ID du message
-// - UserID : ID de l'utilisateur
-// - DateHeure : Date et heure du message
-// - Contenu : Contenu du message
-// - ChannelID : ID du channel
-  Future<void> createMessage(String messageID, String userID, String dateHeure,
+  // Création d'un message et enregistrement dans la base de données Messages
+  // Param :
+  // - messageID : ID du message
+  // - userID : ID de l'utilisateur
+  // - dateHeure : Date et heure du message
+  // - contenu : Contenu du message
+  // - channelID : ID du channel
+  Future<void> createMessage(int messageID, String userID, String dateHeure,
       String contenu, int channelID) async {
     try {
+      print(userID);
       await _databases.createDocument(
         databaseId: databaseID,
         collectionId: collectionMessagesID,
-        documentId: messageID,
+        documentId: messageID.toString(),
         data: {
           'ID': messageID,
-          'UserID': userID,
-          'DateHeure': dateHeure,
-          'Contenu': contenu,
+          'Date_Heure': dateHeure,
+          'Contenue': contenu,
           'ChannelID': channelID,
+          'ID_Users': userID,
         },
       );
     } catch (e) {
       throw Exception('Erreur lors de la création du message : $e');
+    }
+  }
+
+  // Récupérer les messages d'un channel en fonction de l'ID du channel
+  // Params:
+  // - channelId: l'id du channel
+  Future<List<Map<String, dynamic>>> getMessagesByChannelId(int channelId) async {
+    try {
+      final response = await _databases.listDocuments(
+        databaseId: databaseID,
+        collectionId: collectionMessagesID,
+        queries: [
+          Query.equal('ChannelID', channelId),
+          Query.orderDesc('\$createdAt'),
+        ],
+      );
+
+      final currentUserId = await getCurrentUserId();
+
+      return response.documents.map((doc) {
+        return {
+          'isUser': doc.data['UserID'] == currentUserId,
+          'messageText': doc.data['Contenu'],
+          'profilePicUrl': "https://img-19.commentcamarche.net/WNCe54PoGxObY8PCXUxMGQ0Gwss=/480x270/smart/d8c10e7fd21a485c909a5b4c5d99e611/ccmcms-commentcamarche/20456790.jpg",
+          'timestamp': doc.data['DateHeure'],
+        };
+      }).toList();
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération des messages : $e');
+    }
+  }
+
+  // Récupère le nombre total de messages
+  Future<int> getMessageCount() async {
+    try {
+      final response = await _databases.listDocuments(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+      );
+      return response.total;
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération du nombre total de messages : $e');
     }
   }
 
@@ -339,6 +405,37 @@ class AppwriteService {
       };
     } catch (e) {
       throw Exception('Erreur lors de la récupération du channel : $e');
+    }
+  }
+
+  // Récupérer un channel en fonction de son ID et de son nom
+  // Param :
+  // - channelID: ID du channel
+  // - channelName: nom du channel
+  Future<int> getChannelIdByName(String userId, String channelName) async {
+    try {
+      print('Début de getChannelIdByName');
+      final response = await _databases.listDocuments(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+        queries: [
+          Query.equal('Nom', channelName),
+        ],
+      );
+      print('Réponse de la base de données: ${response.documents.length} documents trouvés');
+
+      for (var document in response.documents) {
+        List<dynamic> users = document.data['UsersID'];
+        if (users.contains(userId)) {
+          print('Channel trouvé: ${document.$id}');
+          return int.parse(document.$id);
+        }
+      }
+
+      throw Exception('Channel not found');
+    } catch (e) {
+      print('Erreur dans getChannelIdByName: $e');
+      throw Exception('Erreur lors de la récupération de l\'ID du channel : $e');
     }
   }
 

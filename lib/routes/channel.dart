@@ -23,12 +23,10 @@ class _ChannelState extends State<Channel> {
     try {
       final userId = await _appwriteService.getCurrentUserId();
       final userChannels = await _appwriteService.getUserChannels(userId);
-      print(userId);
 
       List<Map<String, dynamic>> loadedChannels = [];
 
       for (var channelId in userChannels) {
-        print(channelId);
         final channelDetails = await _appwriteService.getChannelById(channelId);
         loadedChannels.add(channelDetails);
       }
