@@ -46,6 +46,7 @@ class AppwriteService {
           'Nom': name,
           'Date_creation': DateTime.now().toIso8601String(),
           'Channel': [],
+          'URL_PP': 'https://img.freepik.com/photos-gratuite/materiel-lecture-luxe-illumine-elegance-ancienne-interieur-generee-par-ia_188544-37881.jpg?w=1060&t=st=1717488472~exp=1717489072~hmac=b674a8e42cff6e82a1c838859072ca4c4831801a8c79f7fa1bdf848f7eacb42f'
         },
       );
     } catch (e) {
@@ -203,7 +204,7 @@ class AppwriteService {
   Future<String> getUserPP(String userID) async {
     try {
       final userDocument = await getUserByID(userID);
-      return userDocument.data['PP'];
+      return userDocument.data['URL_PP'];
     } catch (e) {
       throw Exception(
           'Erreur lors de la récupération de la PP de l\'utilisateur : $e');
@@ -292,7 +293,9 @@ class AppwriteService {
   Future<void> createMessage(int messageID, String userID, String dateHeure,
       String contenu, int channelID) async {
     try {
-      print(userID);
+      print("User ID : " + userID);
+      print("Message ID : " + messageID.toString());
+      print("Channel ID : " + channelID.toString());
       await _databases.createDocument(
         databaseId: databaseID,
         collectionId: collectionMessagesID,
@@ -320,22 +323,54 @@ class AppwriteService {
         collectionId: collectionMessagesID,
         queries: [
           Query.equal('ChannelID', channelId),
-          Query.orderDesc('\$createdAt'),
+          Query.orderAsc('\$createdAt'),
         ],
       );
 
       final currentUserId = await getCurrentUserId();
-
-      return response.documents.map((doc) {
-        return {
-          'isUser': doc.data['UserID'] == currentUserId,
-          'messageText': doc.data['Contenu'],
-          'profilePicUrl': "https://img-19.commentcamarche.net/WNCe54PoGxObY8PCXUxMGQ0Gwss=/480x270/smart/d8c10e7fd21a485c909a5b4c5d99e611/ccmcms-commentcamarche/20456790.jpg",
-          'timestamp': doc.data['DateHeure'],
-        };
+      final messageDetails = response.documents.map((doc) async {
+        final isUser = doc.data['ID_Users'] != currentUserId;
+        final messageText = doc.data['Contenue'];
+        final timestamp = doc.data['Date_Heure'];
+        return buildCompleteMessage(message: {
+          'isUser': isUser,
+          'messageText': messageText,
+          'timestamp': timestamp,
+        }, userId: doc.data['ID_Users']);
       }).toList();
+
+      // Wait for all message details to be retrieved
+      final messages = await Future.wait(messageDetails);
+      return messages;
     } catch (e) {
       throw Exception('Erreur lors de la récupération des messages : $e');
+    }
+  }
+
+  // This function should be defined elsewhere (assuming it builds the full message object with profile picture URL)
+  Future<Map<String, dynamic>> buildCompleteMessage({required Map<String, dynamic> message, required String userId}) async {
+    final profilePicUrl = await getUserPP(userId);
+    return {
+      ...message,
+      'profilePicUrl': profilePicUrl,
+    };
+  }
+
+  // Récupère le nombre total de messages dans un channel
+  // Params:
+  // - channelId: l'ID du channel
+  Future<int> getMessageCountByChannel(int channelId) async {
+    try {
+      final response = await _databases.listDocuments(
+        databaseId: databaseID,
+        collectionId: collectionMessagesID,
+        queries: [
+          Query.equal('ChannelID', channelId),
+        ],
+      );
+      return response.total;
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération du nombre total de messages pour le channel $channelId : $e');
     }
   }
 
@@ -344,7 +379,7 @@ class AppwriteService {
     try {
       final response = await _databases.listDocuments(
         databaseId: databaseID,
-        collectionId: collectionChannelsID,
+        collectionId: collectionMessagesID,
       );
       return response.total;
     } catch (e) {
@@ -414,7 +449,6 @@ class AppwriteService {
   // - channelName: nom du channel
   Future<int> getChannelIdByName(String userId, String channelName) async {
     try {
-      print('Début de getChannelIdByName');
       final response = await _databases.listDocuments(
         databaseId: databaseID,
         collectionId: collectionChannelsID,
@@ -427,14 +461,12 @@ class AppwriteService {
       for (var document in response.documents) {
         List<dynamic> users = document.data['UsersID'];
         if (users.contains(userId)) {
-          print('Channel trouvé: ${document.$id}');
           return int.parse(document.$id);
         }
       }
 
       throw Exception('Channel not found');
     } catch (e) {
-      print('Erreur dans getChannelIdByName: $e');
       throw Exception('Erreur lors de la récupération de l\'ID du channel : $e');
     }
   }

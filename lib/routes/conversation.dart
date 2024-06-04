@@ -43,9 +43,11 @@ class _ConversationState extends State<Conversation> {
   Future<void> _loadMessages() async {
     if (channelId == null) return;
     final messagesFromDB = await _appwriteService.getMessagesByChannelId(channelId!);
-    setState(() {
-      messages.addAll(messagesFromDB);
-    });
+
+    for (var message in messagesFromDB) {
+      messages.add(message);
+      _listKey.currentState?.insertItem(messages.length - 1);
+    }
   }
 
   Future<void> _addUserToChannel(String username) async {
@@ -83,7 +85,7 @@ class _ConversationState extends State<Conversation> {
         messages.add({
           "isUser": true,
           "messageText": _messageController.text,
-          "profilePicUrl": "https://img-19.commentcamarche.net/WNCe54PoGxObY8PCXUxMGQ0Gwss=/480x270/smart/d8c10e7fd21a485c909a5b4c5d99e611/ccmcms-commentcamarche/20456790.jpg",
+          "profilePicUrl": _appwriteService.getUserPP(userId),
           "timestamp": timestamp,
         });
         _listKey.currentState?.insertItem(messages.length - 1);
