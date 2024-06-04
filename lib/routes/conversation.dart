@@ -1,4 +1,4 @@
-import 'dart:math';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -28,10 +28,16 @@ class _ConversationState extends State<Conversation> {
     _initialize();
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   Future<void> _initialize() async {
     await _loadChannel();
     if (channelId != null) {
       await _loadMessages();
+      _subscribeToNewMessages();
     }
   }
 
@@ -50,10 +56,45 @@ class _ConversationState extends State<Conversation> {
     }
   }
 
+  void _subscribeToNewMessages() {
+    _appwriteService.subscribeToMessages((newMessage) async {
+      if (newMessage.payload['ChannelID'] == channelId) {
+        final userId = await _appwriteService.getCurrentUserId();
+        final isUser = newMessage.payload['ID_Users'].contains(userId);
+        final messageText = newMessage.payload['Contenue'];
+        final timestamp = newMessage.payload['Date_Heure'];
+        final profilePicUrl = await _appwriteService.getUserPP(newMessage.payload['ID_Users']);
+
+        final newMessageMap = {
+          'isUser': isUser,
+          'messageText': messageText,
+          'profilePicUrl': profilePicUrl,
+          'timestamp': timestamp,
+        };
+
+        setState(() {
+          messages.add(newMessageMap);
+          _listKey.currentState?.insertItem(messages.length - 1);
+        });
+
+        Future<void>.delayed(const Duration(milliseconds: 100), () {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      }
+    });
+  }
+
   Future<void> _addUserToChannel(String username) async {
     try {
       if (channelId == null) return;
       final userId = await _appwriteService.getUserIdByUsername(username);
+      await _appwriteService.addUserChannel(userId, channelId!);
       await _appwriteService.addUserToChannel(userId, channelId!);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Utilisateur ajouté avec succès')),
@@ -81,27 +122,7 @@ class _ConversationState extends State<Conversation> {
         channelId!,
       );
 
-      setState(() {
-        messages.add({
-          "isUser": true,
-          "messageText": _messageController.text,
-          "profilePicUrl": _appwriteService.getUserPP(userId),
-          "timestamp": timestamp,
-        });
-        _listKey.currentState?.insertItem(messages.length - 1);
-      });
-
       _messageController.clear();
-
-      Future<void>.delayed(const Duration(milliseconds: 100), () {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeOut,
-          );
-        }
-      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur lors de l\'envoi du message : $e')),
@@ -162,13 +183,13 @@ class _ConversationState extends State<Conversation> {
                 final message = messages[index];
                 return SlideTransition(
                   position: Tween<Offset>(
-                    begin: message["isUser"] ? const Offset(1, 0) : const Offset(-1, 0),
+                    begin: message["isUser"] ? const Offset(-1, 0) : const Offset(1, 0),
                     end: Offset.zero,
                   ).animate(animation),
                   child: MessageWidget(
                     isUser: message["isUser"],
                     messageText: message["messageText"],
-                    profilePicUrl: message["profilePicUrl"],
+                    profilePicUrl: message["profilePicUrl"] is String ? message["profilePicUrl"] : "",
                     timestamp: message["timestamp"],
                   ),
                 );

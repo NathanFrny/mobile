@@ -6,6 +6,7 @@ class AppwriteService {
   late Client _client;
   late Account _account;
   late Databases _databases;
+  late Realtime _realtime;
   final endPoint = 'https://appwrite.thimotebois.ovh/v1';
   final projetID = '66178c2b1086e66b625a';
   final databaseID = '664a2388d737af1394f7';
@@ -14,9 +15,26 @@ class AppwriteService {
   final collectionChannelsID = '664a23ae6c741e56b1a7';
 
   AppwriteService() {
-    _client = Client().setEndpoint(endPoint).setProject(projetID);
+    _client = Client().setEndpoint(endPoint).setProject(projetID).setSelfSigned(status: true);
     _account = Account(_client);
     _databases = Databases(_client);
+    _realtime = Realtime(_client);
+  }
+
+  // Abonnement en temps réel aux changements dans la collection de messages
+  void subscribeToMessages(Function(RealtimeMessage) callback) {
+    final subscription = _realtime.subscribe([
+      'databases.$databaseID.collections.$collectionMessagesID.documents'
+    ]);
+
+
+    // Observer permettant à des callbacks de s'abonner
+    subscription.stream.listen((event) {
+      print('Nouveau message reçu : ${event.payload}');
+      callback(event);
+    }, onError: (error) {
+      print('Erreur lors de la souscription en temps réel : $error');
+    });
   }
 
   // ---------------------------
@@ -46,7 +64,7 @@ class AppwriteService {
           'Nom': name,
           'Date_creation': DateTime.now().toIso8601String(),
           'Channel': [],
-          'URL_PP': 'https://img.freepik.com/photos-gratuite/materiel-lecture-luxe-illumine-elegance-ancienne-interieur-generee-par-ia_188544-37881.jpg?w=1060&t=st=1717488472~exp=1717489072~hmac=b674a8e42cff6e82a1c838859072ca4c4831801a8c79f7fa1bdf848f7eacb42f'
+          'URL_PP': 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg'
         },
       );
     } catch (e) {
@@ -293,9 +311,6 @@ class AppwriteService {
   Future<void> createMessage(int messageID, String userID, String dateHeure,
       String contenu, int channelID) async {
     try {
-      print("User ID : " + userID);
-      print("Message ID : " + messageID.toString());
-      print("Channel ID : " + channelID.toString());
       await _databases.createDocument(
         databaseId: databaseID,
         collectionId: collectionMessagesID,
@@ -329,7 +344,7 @@ class AppwriteService {
 
       final currentUserId = await getCurrentUserId();
       final messageDetails = response.documents.map((doc) async {
-        final isUser = doc.data['ID_Users'] != currentUserId;
+        final isUser = doc.data['ID_Users'] == currentUserId;
         final messageText = doc.data['Contenue'];
         final timestamp = doc.data['Date_Heure'];
         return buildCompleteMessage(message: {
@@ -482,8 +497,15 @@ class AppwriteService {
         collectionId: collectionChannelsID,
         documentId: channelID.toString(),
       );
-      final users = channelDocument.data['UsersID'];
+
+      List<dynamic> users = channelDocument.data['UsersID'];
+      if (users.contains(userID)) {
+        throw Exception('Utilisateur déjà ajouté au channel');
+      }
+
       users.add(userID);
+
+      print('Users avant la mise à jour: $users');
 
       await _databases.updateDocument(
         databaseId: databaseID,
@@ -493,9 +515,10 @@ class AppwriteService {
           'UsersID': users,
         },
       );
+
+      print('Utilisateur ajouté au channel avec succès.');
     } catch (e) {
-      throw Exception(
-          'Erreur lors de l\'ajout de l\'utilisateur au channel : $e');
+      throw Exception('Erreur lors de l\'ajout de l\'utilisateur au channel : $e');
     }
   }
 

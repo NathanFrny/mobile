@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/widgets/sub_widgets/text_widget.dart';
+import 'package:intl/intl.dart';
 
 class MessageWidget extends StatelessWidget {
   final bool isUser;
@@ -15,22 +16,34 @@ class MessageWidget extends StatelessWidget {
     required this.timestamp,
   });
 
+  String _formatTimestamp(String timestamp) {
+    try {
+      DateTime dateTime = DateTime.parse(timestamp);
+      String formattedDate = DateFormat('dd/MM/yyyy').format(dateTime);
+      String formattedTime = DateFormat('HH:mm').format(dateTime);
+      return '$formattedDate $formattedTime';
+    } catch (e) {
+      return timestamp;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
 
     Color textColor = isUser ? Colors.lightBlue : Colors.indigo;
+    String formattedTimestamp = _formatTimestamp(timestamp);
 
     return Row(
-      mainAxisAlignment: isUser ? MainAxisAlignment.start : MainAxisAlignment.end,
+      mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (isUser)
+        if (!isUser)
           CircleAvatar(
             backgroundImage: NetworkImage(profilePicUrl),
           ),
-        if (!isUser)
+        if (isUser)
           Text(
-            timestamp,
+            formattedTimestamp,
             style: const TextStyle(
               fontSize: 10,
             ),
@@ -40,13 +53,13 @@ class MessageWidget extends StatelessWidget {
           // Text Widget
           child: TextWidget(text: messageText, color: textColor),
         ),
-        if (!isUser)
+        if (isUser)
           CircleAvatar(
             backgroundImage: NetworkImage(profilePicUrl),
           ),
-        if (isUser)
+        if (!isUser)
           Text(
-            timestamp,
+            formattedTimestamp,
             style: const TextStyle(
               fontSize: 10,
             ),
