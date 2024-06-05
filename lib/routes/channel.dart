@@ -126,6 +126,7 @@ class _ChannelState extends State<Channel> {
 
   @override
   Widget build(BuildContext context) {
+    bool isSmallScreen = MediaQuery.of(context).size.width < 600;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Channels'),
@@ -138,7 +139,7 @@ class _ChannelState extends State<Channel> {
             onExit: (_) => setState(() => _hoveringIndex.remove(index)),
             child: ListTile(
               title: Text(channels[index]['name']),
-              trailing: _hoveringIndex.contains(index)
+              trailing: (isSmallScreen || _hoveringIndex.contains(index))
                   ? IconButton(
                 icon: Icon(Icons.remove_circle, color: Colors.red),
                 onPressed: () => _removeUserFromChannel(int.parse(channels[index]['id'])),

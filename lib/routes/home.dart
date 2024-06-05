@@ -196,11 +196,6 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Select your background color:',
-              style: TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 10),
             const Expanded(
               child: ColorPicker(),
             ),

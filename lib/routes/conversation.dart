@@ -278,7 +278,7 @@ class _ConversationState extends State<Conversation> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Channel: ${widget.channelName}'),
+        title: Text('${widget.channelName}'),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add),
