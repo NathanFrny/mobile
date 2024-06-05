@@ -458,6 +458,28 @@ class AppwriteService {
     }
   }
 
+  // Récupération de l'ID du message le plus élevé
+  Future<int> getMaxMessageId() async {
+    try {
+      final response = await _databases.listDocuments(
+        databaseId: databaseID,
+        collectionId: collectionMessagesID,
+        queries: [
+          Query.orderDesc('ID'),
+          Query.limit(1),
+        ],
+      );
+
+      if (response.documents.isNotEmpty) {
+        return int.parse(response.documents.first.$id);
+      } else {
+        return 0;  // Retourner 0 si aucun channel n'existe
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération de l\'ID du message le plus élevé : $e');
+    }
+  }
+
   // Suppression de tous les messages associés à un channel
   // Params:
   // - channelId: ID du channel

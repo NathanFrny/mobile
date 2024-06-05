@@ -162,7 +162,7 @@ class _ConversationState extends State<Conversation> {
       if (channelId == null || _messageController.text.isEmpty) return;
       final userId = await _appwriteService.getCurrentUserId();
       final timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-      final messageCount = await _appwriteService.getMessageCount();
+      final messageCount = await _appwriteService.getMaxMessageId();
       final messageId = messageCount + 1;
 
       await _appwriteService.createMessage(
