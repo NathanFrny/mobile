@@ -263,6 +263,7 @@ class _ConversationState extends State<Conversation> {
                     decoration: const InputDecoration(
                       hintText: 'Écrire un message',
                     ),
+                    onSubmitted: (value) => _sendMessage(),
                   ),
                 ),
                 IconButton(
