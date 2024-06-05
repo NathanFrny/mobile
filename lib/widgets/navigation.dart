@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/routes/channel.dart';
 
+import '../routes/home.dart';
+
 class Navigation extends StatefulWidget {
   const Navigation({super.key});
 
@@ -44,18 +46,7 @@ class _NavigationState extends State<Navigation> {
       ),
       body: <Widget>[
         /// Home page
-        Card(
-          shadowColor: Colors.transparent,
-          margin: const EdgeInsets.all(8.0),
-          child: SizedBox.expand(
-            child: Center(
-              child: Text(
-                'Home page',
-                style: theme.textTheme.titleLarge,
-              ),
-            ),
-          ),
-        ),
+        const Home(),
 
         /// Notifications page
         const Padding(

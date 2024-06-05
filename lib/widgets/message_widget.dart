@@ -7,6 +7,7 @@ class MessageWidget extends StatelessWidget {
   final String messageText;
   final String profilePicUrl;
   final String timestamp;
+  final String backgroundColor;
 
   const MessageWidget({
     super.key,
@@ -14,6 +15,7 @@ class MessageWidget extends StatelessWidget {
     required this.messageText,
     required this.profilePicUrl,
     required this.timestamp,
+    required this.backgroundColor,
   });
 
   String _formatTimestamp(String timestamp) {
@@ -29,9 +31,9 @@ class MessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    Color textColor = isUser ? Colors.lightBlue : Colors.indigo;
     String formattedTimestamp = _formatTimestamp(timestamp);
+
+    final Color bgColor = _getColorFromName(backgroundColor);
 
     return Row(
       mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
@@ -48,10 +50,8 @@ class MessageWidget extends StatelessWidget {
               fontSize: 10,
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.all(7.0),
-          // Text Widget
-          child: TextWidget(text: messageText, color: textColor),
+        Container(
+          child: TextWidget(text: messageText, color: bgColor),
         ),
         if (isUser)
           CircleAvatar(
@@ -66,5 +66,28 @@ class MessageWidget extends StatelessWidget {
           ),
       ],
     );
+  }
+
+  Color _getColorFromName(String colorName) {
+    switch (colorName) {
+      case 'green':
+        return Colors.green;
+      case 'blue':
+        return Colors.blue;
+      case 'yellow':
+        return Colors.yellow;
+      case 'red':
+        return Colors.red;
+      case 'purple':
+        return Colors.purple;
+      case 'orange':
+        return Colors.orange;
+      case 'pink':
+        return Colors.pink;
+      case 'black':
+        return Colors.black;
+      default:
+        return Colors.grey;
+    }
   }
 }
