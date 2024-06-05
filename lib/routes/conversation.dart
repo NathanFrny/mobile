@@ -21,6 +21,7 @@ class _ConversationState extends State<Conversation> {
   final List<Map<String, dynamic>> messages = [];
   final TextEditingController _messageController = TextEditingController();
   int? channelId;
+  String currentUserName = '';
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _ConversationState extends State<Conversation> {
     await _loadChannel();
     if (channelId != null) {
       await _loadMessages();
+      await _loadCurrentUserName();
       _subscribeToNewMessages();
     }
   }
@@ -55,6 +57,10 @@ class _ConversationState extends State<Conversation> {
       _listKey.currentState?.insertItem(messages.length - 1);
     }
     _scrollToBottom();
+  }
+
+  Future<void> _loadCurrentUserName() async {
+    currentUserName = await _appwriteService.getCurrentUserName();
   }
 
   void _subscribeToNewMessages() {
@@ -154,6 +160,47 @@ class _ConversationState extends State<Conversation> {
     );
   }
 
+  Future<void> _showUsers() async {
+    if (channelId == null) return;
+
+    final channelDetails = await _appwriteService.getChannelById(channelId!);
+    List<dynamic> users = channelDetails['UsersID'];
+    List<String> userNames = [];
+
+    for (var userId in users) {
+      final user = await _appwriteService.getUserByID(userId);
+      userNames.add(user.data['Nom']);
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Participants'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: userNames.map((userName) {
+              return Text(
+                userName,
+                style: TextStyle(
+                  fontWeight: userName == currentUserName ? FontWeight.bold : FontWeight.normal,
+                ),
+              );
+            }).toList(),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Fermer'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -175,6 +222,10 @@ class _ConversationState extends State<Conversation> {
           IconButton(
             icon: const Icon(Icons.person_add),
             onPressed: _showAddUserDialog,
+          ),
+          IconButton(
+            icon: const Icon(Icons.people),
+            onPressed: _showUsers,
           ),
         ],
       ),
