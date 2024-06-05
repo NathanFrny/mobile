@@ -93,8 +93,6 @@ class _ChannelState extends State<Channel> {
     }
   }
 
-
-
   void _showCreateChannelDialog() {
     showDialog(
       context: context,

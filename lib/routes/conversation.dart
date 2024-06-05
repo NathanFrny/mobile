@@ -53,6 +53,9 @@ class _ConversationState extends State<Conversation> {
     final messagesFromDB = await _appwriteService.getMessagesByChannelId(channelId!);
 
     for (var message in messagesFromDB) {
+      final sender = await _appwriteService.getUserByID(message['ID_Users']);
+      final backgroundColor = sender.data['backgroundColor'] ?? 'grey';
+      message['backgroundColor'] = backgroundColor;
       messages.add(message);
       _listKey.currentState?.insertItem(messages.length - 1);
     }
@@ -67,16 +70,19 @@ class _ConversationState extends State<Conversation> {
     _appwriteService.subscribeToMessages((newMessage) async {
       if (newMessage.payload['ChannelID'] == channelId) {
         final userId = await _appwriteService.getCurrentUserId();
+        final sender = await _appwriteService.getUserByID(newMessage.payload['ID_Users']);
         final isUser = newMessage.payload['ID_Users'].contains(userId);
-        final messageText = newMessage.payload['Contenue'];
-        final timestamp = newMessage.payload['Date_Heure'];
-        final profilePicUrl = await _appwriteService.getUserPP(newMessage.payload['ID_Users']);
+        final messageText = newMessage.payload['Contenue'] ?? '';
+        final timestamp = newMessage.payload['Date_Heure'] ?? '';
+        final profilePicUrl = await _appwriteService.getUserPP(newMessage.payload['ID_Users']) ?? '';
+        final backgroundColor = sender.data['backgroundColor'] ?? '#000000';
 
         final newMessageMap = {
           'isUser': isUser,
           'messageText': messageText,
           'profilePicUrl': profilePicUrl,
           'timestamp': timestamp,
+          'backgroundColor': backgroundColor,
         };
 
         setState(() {
@@ -88,6 +94,7 @@ class _ConversationState extends State<Conversation> {
       }
     });
   }
+
 
   Future<void> _addUserToChannel(String username) async {
     try {
@@ -247,6 +254,7 @@ class _ConversationState extends State<Conversation> {
                     messageText: message["messageText"],
                     profilePicUrl: message["profilePicUrl"] is String ? message["profilePicUrl"] : "",
                     timestamp: message["timestamp"],
+                    backgroundColor: message["backgroundColor"],
                   ),
                 );
               },
