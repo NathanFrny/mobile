@@ -27,10 +27,8 @@ class AppwriteService {
       'databases.$databaseID.collections.$collectionMessagesID.documents'
     ]);
 
-
     // Observer permettant à des callbacks de s'abonner
     subscription.stream.listen((event) {
-      print('Nouveau message reçu : ${event.payload}');
       callback(event);
     }, onError: (error) {
       print('Erreur lors de la souscription en temps réel : $error');
@@ -64,7 +62,8 @@ class AppwriteService {
           'Nom': name,
           'Date_creation': DateTime.now().toIso8601String(),
           'Channel': [],
-          'URL_PP': 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg'
+          'URL_PP': 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg',
+          'backgroundColor': 'blue',
         },
       );
     } catch (e) {
@@ -203,6 +202,19 @@ class AppwriteService {
     }
   }
 
+  // Récupère la couleur de fond de message d'un utilisateur
+  // Params:
+  // - userID: ID de l'utilisateur
+  Future<String> getUserBackgroundColor(String userID) async {
+    try {
+      final userDocument = await getUserByID(userID);
+      return userDocument.data['backgroundColor'];
+    } catch (e) {
+      throw Exception(
+          'Erreur lors de la récupération de la couleur de fond de message de l\'utilisateur : $e');
+    }
+  }
+
   // Récupération des channels d'un utilisateur dans la base de données Users
   //
   // Return : Liste des channels de l'utilisateur
@@ -248,6 +260,26 @@ class AppwriteService {
           'Erreur lors de la modification de la PP de l\'utilisateur : $e');
     }
   }
+
+  // Met à jour la couleur de fond de message d'un utilisateur
+  // Params:
+  // - userId: ID de l'utilisateur
+  // - color: Nouvelle couleur de fond
+  Future<void> updateUserColor(String userId, String color) async {
+    try {
+      await _databases.updateDocument(
+        databaseId: databaseID,
+        collectionId: collectionUsersID,
+        documentId: userId,
+        data: {
+          'backgroundColor': color,
+        },
+      );
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour de la couleur de fond de l\'utilisateur : $e');
+    }
+  }
+
 
   // Ajouts d'un channel à la liste des channels d'un utilisateur dans la base de données Users
   // Param :
@@ -311,6 +343,7 @@ class AppwriteService {
   Future<void> createMessage(int messageID, String userID, String dateHeure,
       String contenu, int channelID) async {
     try {
+
       await _databases.createDocument(
         databaseId: databaseID,
         collectionId: collectionMessagesID,
@@ -353,6 +386,7 @@ class AppwriteService {
           'isUser': isUser,
           'messageText': messageText,
           'timestamp': timestamp,
+          'ID_Users': doc.data['ID_Users'],
         }, userId: doc.data['ID_Users']);
       }).toList();
 
@@ -497,7 +531,6 @@ class AppwriteService {
   // - channelID: ID du channel
   Future<Map<String, dynamic>> getChannelById(int channelId) async {
     try {
-      print(channelId);
       final document = await _databases.getDocument(
         databaseId: databaseID,
         collectionId: collectionChannelsID,
