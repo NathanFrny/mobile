@@ -8,6 +8,8 @@ class MessageWidget extends StatelessWidget {
   final String profilePicUrl;
   final String timestamp;
   final String backgroundColor;
+  final String userName;
+  final bool showInfo;
 
   const MessageWidget({
     super.key,
@@ -16,6 +18,8 @@ class MessageWidget extends StatelessWidget {
     required this.profilePicUrl,
     required this.timestamp,
     required this.backgroundColor,
+    required this.userName,
+    required this.showInfo,
   });
 
   String _formatTimestamp(String timestamp) {
@@ -32,38 +36,62 @@ class MessageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String formattedTimestamp = _formatTimestamp(timestamp);
-
     final Color bgColor = _getColorFromName(backgroundColor);
 
-    return Row(
-      mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        if (!isUser)
-          CircleAvatar(
-            backgroundImage: NetworkImage(profilePicUrl),
+        if (showInfo) ...[
+          Row(
+            mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (!isUser)
+                CircleAvatar(
+                  backgroundImage: NetworkImage(profilePicUrl),
+                ),
+              if (!isUser) const SizedBox(width: 8.0),
+              Column(
+                crossAxisAlignment: isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    formattedTimestamp,
+                    style: const TextStyle(
+                      fontSize: 10,
+                    ),
+                  ),
+                  Text(
+                    userName,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4.0),
+                  TextWidget(text: messageText, color: bgColor),
+                ],
+              ),
+              if (isUser) const SizedBox(width: 8.0),
+              if (isUser)
+                CircleAvatar(
+                  backgroundImage: NetworkImage(profilePicUrl),
+                ),
+            ],
           ),
-        if (isUser)
-          Text(
-            formattedTimestamp,
-            style: const TextStyle(
-              fontSize: 10,
+        ] else ...[
+          Padding(
+            padding: EdgeInsets.only(
+              left: isUser ? 0 : 48.0, // Espace réservé pour l'avatar si ce n'est pas l'utilisateur
+              right: isUser ? 48.0 : 0, // Espace réservé pour l'avatar si c'est l'utilisateur
+              top: 2.0,
+              bottom: 2.0,
+            ),
+            child: Align(
+              alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+              child: TextWidget(text: messageText, color: bgColor),
             ),
           ),
-        Container(
-          child: TextWidget(text: messageText, color: bgColor),
-        ),
-        if (isUser)
-          CircleAvatar(
-            backgroundImage: NetworkImage(profilePicUrl),
-          ),
-        if (!isUser)
-          Text(
-            formattedTimestamp,
-            style: const TextStyle(
-              fontSize: 10,
-            ),
-          ),
+        ],
       ],
     );
   }

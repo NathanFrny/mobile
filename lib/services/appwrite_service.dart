@@ -392,7 +392,7 @@ class AppwriteService {
         collectionId: collectionMessagesID,
         queries: [
           Query.equal('ChannelID', channelId),
-          Query.orderAsc('\$createdAt'),
+          Query.orderDesc('\$createdAt'),
           Query.limit(limit),
         ],
       );
@@ -412,7 +412,7 @@ class AppwriteService {
 
       // Wait for all message details to be retrieved
       final messages = await Future.wait(messageDetails);
-      return messages;
+      return messages.reversed.toList();
     } catch (e) {
       throw Exception('Erreur lors de la récupération des messages : $e');
     }
