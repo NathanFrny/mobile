@@ -1,53 +1,81 @@
+// home.dart
+
 import 'package:flutter/material.dart';
 import 'package:mobile/services/appwrite_service.dart';
+import 'package:mobile/widgets/color_picker.dart';
 
 class Home extends StatefulWidget {
-  const Home({super.key});
+  const Home({Key? key}) : super(key: key);
 
   @override
-  State<Home> createState() => _HomeState();
+  _HomeState createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> {
   final AppwriteService _appwriteService = AppwriteService();
-  String selectedColor = '';
-  String currentColor = '';
-
-  final List<String> colors = [
-    'green', 'blue', 'yellow', 'red', 'purple', 'orange', 'pink', 'black'
-  ];
-
-  final Map<String, Color> colorMap = {
-    'green': Colors.green,
-    'blue': Colors.blue,
-    'yellow': Colors.yellow,
-    'red': Colors.red,
-    'purple': Colors.purple,
-    'orange': Colors.orange,
-    'pink': Colors.pink,
-    'black': Colors.black,
-  };
+  String currentUserName = '';
+  String profilePicUrl = '';
 
   @override
   void initState() {
     super.initState();
-    _loadCurrentColor();
+    _loadUserData();
   }
 
-  Future<void> _loadCurrentColor() async {
+  Future<void> _loadUserData() async {
     final userId = await _appwriteService.getCurrentUserId();
     final user = await _appwriteService.getUserByID(userId);
     setState(() {
-      currentColor = user.data['backgroundColor'];
+      currentUserName = user.data['Nom'];
+      profilePicUrl = user.data['URL_PP'];
     });
   }
 
-  Future<void> _updateColor(String color) async {
+  Future<void> _updateProfilePic(String url) async {
     final userId = await _appwriteService.getCurrentUserId();
-    await _appwriteService.updateUserColor(userId, color);
+    await _appwriteService.setUserPP(userId, url);
     setState(() {
-      currentColor = color;
+      profilePicUrl = url;
     });
+  }
+
+  void _showProfilePicDialog() {
+    final TextEditingController _urlController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Modifier la photo de profil'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Entrez l\'URL de la nouvelle image :'),
+              TextField(
+                controller: _urlController,
+                decoration: const InputDecoration(
+                  labelText: 'URL de l\'image',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _updateProfilePic(_urlController.text);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Modifier'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -67,38 +95,29 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Select your background color:',
-              style: TextStyle(fontSize: 18),
+            CircleAvatar(
+              backgroundImage: NetworkImage(profilePicUrl),
+              radius: 40,
+              child: GestureDetector(
+                onTap: _showProfilePicDialog,
+                child: const Icon(
+                  Icons.edit,
+                  color: Colors.white,
+                ),
+              ),
             ),
             const SizedBox(height: 10),
-            Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                ),
-                itemCount: colors.length,
-                itemBuilder: (context, index) {
-                  final color = colors[index];
-                  return GestureDetector(
-                    onTap: () => _updateColor(color),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: colorMap[color],
-                        shape: BoxShape.circle,
-                        border: currentColor == color
-                            ? Border.all(color: Colors.blue, width: 3)
-                            : null,
-                      ),
-                      child: currentColor == color
-                          ? const Icon(Icons.check, color: Colors.white)
-                          : null,
-                    ),
-                  );
-                },
+            Text(
+              currentUserName,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            const SizedBox(height: 20),
+            const SizedBox(height: 10),
+            const Expanded(
+              child: ColorPicker(),
             ),
           ],
         ),
