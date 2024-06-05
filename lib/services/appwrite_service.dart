@@ -261,6 +261,26 @@ class AppwriteService {
     }
   }
 
+  // Modification du nom de l'utilisateur
+  // Params:
+  // - userID: ID de l'utilisateur
+  // - username: nouveau nom de l'utilisateur
+  Future<void> setUserName(String userID, String username) async {
+    try {
+      await _databases.updateDocument(
+        databaseId: databaseID,
+        collectionId: collectionUsersID,
+        documentId: userID,
+        data: {
+          'Nom': username,
+        },
+      );
+    } catch (e) {
+      throw Exception(
+          'Erreur lors de la modification du nom de l\'utilisateur : $e');
+    }
+  }
+
   // Met à jour la couleur de fond de message d'un utilisateur
   // Params:
   // - userId: ID de l'utilisateur

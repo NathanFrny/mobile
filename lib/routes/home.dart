@@ -15,6 +15,7 @@ class _HomeState extends State<Home> {
   final AppwriteService _appwriteService = AppwriteService();
   String currentUserName = '';
   String profilePicUrl = '';
+  bool isHovering = false;
 
   @override
   void initState() {
@@ -36,6 +37,14 @@ class _HomeState extends State<Home> {
     await _appwriteService.setUserPP(userId, url);
     setState(() {
       profilePicUrl = url;
+    });
+  }
+
+  Future<void> _updateUserName(String newName) async {
+    final userId = await _appwriteService.getCurrentUserId();
+    await _appwriteService.setUserName(userId, newName);
+    setState(() {
+      currentUserName = newName;
     });
   }
 
@@ -78,6 +87,45 @@ class _HomeState extends State<Home> {
     );
   }
 
+  void _showEditUserNameDialog() {
+    final TextEditingController _nameController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Modifier le pseudo'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Entrez votre nouveau pseudo :'),
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nouveau pseudo',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _updateUserName(_nameController.text);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Modifier'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,14 +155,51 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 10),
-            Text(
-              currentUserName,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            MouseRegion(
+              onEnter: (_) {
+                setState(() {
+                  isHovering = true;
+                });
+              },
+              onExit: (_) {
+                setState(() {
+                  isHovering = false;
+                });
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: _showEditUserNameDialog,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      transform: Matrix4.translationValues(
+                        isHovering ? -10 : 0,
+                        0,
+                        0,
+                      ),
+                      child: Text(
+                        currentUserName,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (isHovering)
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.black),
+                      onPressed: _showEditUserNameDialog,
+                    ),
+                ],
               ),
             ),
             const SizedBox(height: 20),
+            const Text(
+              'Select your background color:',
+              style: TextStyle(fontSize: 18),
+            ),
             const SizedBox(height: 10),
             const Expanded(
               child: ColorPicker(),
