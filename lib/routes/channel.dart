@@ -52,7 +52,7 @@ class _ChannelState extends State<Channel> {
   Future<void> _createChannel(String channelName) async {
     try {
       final userId = await _appwriteService.getCurrentUserId();
-      final channelCount = await _appwriteService.getChannelCount();
+      final channelCount = await _appwriteService.getMaxChannelId();
       final channelId = channelCount + 1;
 
       await _appwriteService.createChannel(channelId, channelName);
@@ -73,12 +73,14 @@ class _ChannelState extends State<Channel> {
   Future<void> _removeUserFromChannel(int channelId) async {
     try {
       final userId = await _appwriteService.getCurrentUserId();
+      await _appwriteService.removeUserChannel(userId, channelId);
       await _appwriteService.removeUserFromChannel(userId, channelId);
 
       final channelDetails = await _appwriteService.getChannelById(channelId);
       List<dynamic> users = channelDetails['UsersID'] ?? [];
 
       if (users.isEmpty) {
+        await _appwriteService.deleteMessagesByChannelId(channelId);
         await _appwriteService.deleteChannel(channelId);
         print('Channel supprimé de la base de données.');
       }
