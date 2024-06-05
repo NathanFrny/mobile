@@ -41,6 +41,15 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def newName = output.outputFile.name
+            newName = newName.replace("app-", "CSend-")
+            newName = newName.replace("-release", "-v${defaultConfig.versionName}")
+            output.outputFileName = newName
+        }
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.mobile"
