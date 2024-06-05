@@ -54,6 +54,7 @@ class _ConversationState extends State<Conversation> {
       messages.add(message);
       _listKey.currentState?.insertItem(messages.length - 1);
     }
+    _scrollToBottom();
   }
 
   void _subscribeToNewMessages() {
@@ -77,15 +78,7 @@ class _ConversationState extends State<Conversation> {
           _listKey.currentState?.insertItem(messages.length - 1);
         });
 
-        Future<void>.delayed(const Duration(milliseconds: 100), () {
-          if (_scrollController.hasClients) {
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeOut,
-            );
-          }
-        });
+        _scrollToBottom();
       }
     });
   }
@@ -159,6 +152,18 @@ class _ConversationState extends State<Conversation> {
         );
       },
     );
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   @override
