@@ -333,12 +333,14 @@ class AppwriteService {
   // - channelId: l'id du channel
   Future<List<Map<String, dynamic>>> getMessagesByChannelId(int channelId) async {
     try {
+      int limit = 100;
       final response = await _databases.listDocuments(
         databaseId: databaseID,
         collectionId: collectionMessagesID,
         queries: [
           Query.equal('ChannelID', channelId),
           Query.orderAsc('\$createdAt'),
+          Query.limit(limit),
         ],
       );
 
@@ -402,6 +404,34 @@ class AppwriteService {
     }
   }
 
+  // Suppression de tous les messages associés à un channel
+  // Params:
+  // - channelId: ID du channel
+  Future<void> deleteMessagesByChannelId(int channelId) async {
+    try {
+      final response = await _databases.listDocuments(
+        databaseId: databaseID,
+        collectionId: collectionMessagesID,
+        queries: [
+          Query.equal('ChannelID', channelId),
+        ],
+      );
+
+      for (var document in response.documents) {
+        await _databases.deleteDocument(
+          databaseId: databaseID,
+          collectionId: collectionMessagesID,
+          documentId: document.$id,
+        );
+      }
+
+      print('Tous les messages du channel $channelId ont été supprimés.');
+    } catch (e) {
+      throw Exception('Erreur lors de la suppression des messages du channel : $e');
+    }
+  }
+
+
 //---------------------------
 //  Gestion des channels
 // ---------------------------
@@ -439,11 +469,35 @@ class AppwriteService {
     }
   }
 
+  // Récupération de l'ID de channel le plus élevé
+  Future<int> getMaxChannelId() async {
+    try {
+      final response = await _databases.listDocuments(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+        queries: [
+          Query.orderDesc('ID'),
+          Query.limit(1),
+        ],
+      );
+
+      if (response.documents.isNotEmpty) {
+        return int.parse(response.documents.first.$id);
+      } else {
+        return 0;  // Retourner 0 si aucun channel n'existe
+      }
+    } catch (e) {
+      throw Exception('Erreur lors de la récupération de l\'ID de channel le plus élevé : $e');
+    }
+  }
+
+
   // Récupérer un channel en fonction de son ID
   // Param :
   // - channelID: ID du channel
   Future<Map<String, dynamic>> getChannelById(int channelId) async {
     try {
+      print(channelId);
       final document = await _databases.getDocument(
         databaseId: databaseID,
         collectionId: collectionChannelsID,
@@ -452,6 +506,7 @@ class AppwriteService {
       return {
         'id': document.$id,
         'name': document.data['Nom'],
+        'UsersID': document.data['UsersID'],
       };
     } catch (e) {
       throw Exception('Erreur lors de la récupération du channel : $e');
@@ -533,7 +588,8 @@ class AppwriteService {
         collectionId: collectionChannelsID,
         documentId: channelID.toString(),
       );
-      final users = channelDocument.data['UsersID'];
+      List<dynamic> users = channelDocument.data['UsersID'] ?? [];
+
       users.remove(userID);
 
       await _databases.updateDocument(
@@ -549,6 +605,7 @@ class AppwriteService {
           'Erreur lors de la suppression de l\'utilisateur du channel : $e');
     }
   }
+
 
   // Changement du nom d'un channel dans la base de données Channels
   // Param :
@@ -586,6 +643,22 @@ class AppwriteService {
     } catch (e) {
       throw Exception(
           'Erreur lors de la modification de la PP du channel : $e');
+    }
+  }
+
+  // Supprime un channel de la base de données
+  // Params
+  // - channelId: ID du channel
+  Future<void> deleteChannel(int channelId) async {
+    try {
+      await _databases.deleteDocument(
+        databaseId: databaseID,
+        collectionId: collectionChannelsID,
+        documentId: channelId.toString(),
+      );
+      print('Channel supprimé avec succès');
+    } catch (e) {
+      throw Exception('Erreur lors de la suppression du channel : $e');
     }
   }
 }
