@@ -12,6 +12,7 @@ class Channel extends StatefulWidget {
 class _ChannelState extends State<Channel> {
   final AppwriteService _appwriteService = AppwriteService();
   List<Map<String, dynamic>> channels = [];
+  Set<int> _hoveringIndex = {};
 
   @override
   void initState() {
@@ -38,7 +39,6 @@ class _ChannelState extends State<Channel> {
       print('Erreur lors du chargement des channels : $e');
     }
   }
-
 
   void _navigateToConversation(BuildContext context, String channelName) {
     Navigator.push(
@@ -67,6 +67,27 @@ class _ChannelState extends State<Channel> {
       _loadChannels();
     } catch (e) {
       print('Erreur lors de la création du channel : $e');
+    }
+  }
+
+  Future<void> _removeUserFromChannel(int channelId) async {
+    try {
+      final userId = await _appwriteService.getCurrentUserId();
+      await _appwriteService.removeUserFromChannel(userId, channelId);
+
+      final channelDetails = await _appwriteService.getChannelById(channelId);
+      List<dynamic> users = channelDetails['UsersID'] ?? [];
+
+      if (users.isEmpty) {
+        await _appwriteService.deleteChannel(channelId);
+        print('Channel supprimé de la base de données.');
+      }
+
+      await _appwriteService.removeUserChannel(userId, channelId);
+      print('Utilisateur supprimé du channel.');
+      _loadChannels();
+    } catch (e) {
+      print('Erreur lors de la suppression de l\'utilisateur du channel : $e');
     }
   }
 
@@ -112,9 +133,19 @@ class _ChannelState extends State<Channel> {
       body: ListView.builder(
         itemCount: channels.length,
         itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(channels[index]['name']),
-            onTap: () => _navigateToConversation(context, channels[index]['name']),
+          return MouseRegion(
+            onEnter: (_) => setState(() => _hoveringIndex.add(index)),
+            onExit: (_) => setState(() => _hoveringIndex.remove(index)),
+            child: ListTile(
+              title: Text(channels[index]['name']),
+              trailing: _hoveringIndex.contains(index)
+                  ? IconButton(
+                icon: Icon(Icons.remove_circle, color: Colors.red),
+                onPressed: () => _removeUserFromChannel(int.parse(channels[index]['id'])),
+              )
+                  : null,
+              onTap: () => _navigateToConversation(context, channels[index]['name']),
+            ),
           );
         },
       ),
