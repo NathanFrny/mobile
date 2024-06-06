@@ -384,9 +384,8 @@ class AppwriteService {
   // Récupérer les messages d'un channel en fonction de l'ID du channel
   // Params:
   // - channelId: l'id du channel
-  Future<List<Map<String, dynamic>>> getMessagesByChannelId(int channelId) async {
+  Future<List<Map<String, dynamic>>> getMessagesByChannelId(int channelId, {int limit = 20, int offset = 0}) async {
     try {
-      int limit = 100;
       final response = await _databases.listDocuments(
         databaseId: databaseID,
         collectionId: collectionMessagesID,
@@ -394,6 +393,7 @@ class AppwriteService {
           Query.equal('ChannelID', channelId),
           Query.orderDesc('\$createdAt'),
           Query.limit(limit),
+          Query.offset(offset),
         ],
       );
 

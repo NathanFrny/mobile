@@ -22,6 +22,10 @@ class _ConversationState extends State<Conversation> {
   int? channelId;
   String currentUserName = '';
   bool _isScrollButtonVisible = false;
+  bool _isLoadingMessages = false;
+  bool _isFirstLoad = true;
+  double _scrollPosition = 0.0;
+  int _loadedMessagesCount = 0;
 
   @override
   void initState() {
@@ -50,48 +54,105 @@ class _ConversationState extends State<Conversation> {
     channelId = await _appwriteService.getChannelIdByName(userId, widget.channelName);
   }
 
-  Future<void> _loadMessages() async {
+  Future<void> _loadMessages({int limit = 20}) async {
     if (channelId == null) return;
-    final messagesFromDB = await _appwriteService.getMessagesByChannelId(channelId!);
 
-    for (int i = 0; i < messagesFromDB.length; i++) {
-      final message = messagesFromDB[i];
+    final messagesFromDB = await _appwriteService.getMessagesByChannelId(channelId!, limit: limit, offset: _loadedMessagesCount);
 
-      final String userId = message['ID_Users'] as String? ?? '';
-      final String messageText = message['messageText'] as String? ?? '';
-      final String timestamp = message['timestamp'] as String? ?? '';
-      if (userId.isEmpty || messageText.isEmpty || timestamp.isEmpty) {
-        print('Skipping message due to missing required fields.');
-        continue;
-      }
+    if (messagesFromDB.isEmpty) return; // Stop if no more messages
 
-      final sender = await _appwriteService.getUserByID(userId);
-      final String backgroundColor = sender.data['backgroundColor'] as String? ?? 'blue';
-      final String userName = sender.data['Nom'] as String? ?? 'Unknown';
-      final String profilePicUrl = sender.data['URL_PP'] as String? ?? 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg';
+    double oldScrollHeight = _scrollController.position.maxScrollExtent;
 
-      message['backgroundColor'] = backgroundColor;
-      message['userName'] = userName;
-      message['profilePicUrl'] = profilePicUrl;
+    if (_isFirstLoad) {
+      for (int i = 0; i < messagesFromDB.length; i++) {
+        final message = messagesFromDB[i];
 
-      bool showInfo = true;
-      if (i > 0) {
-        final prevMessage = messagesFromDB[i - 1];
-        final String prevUserId = prevMessage['ID_Users'] as String? ?? '';
-        final DateTime prevTimestamp = DateTime.parse(prevMessage['timestamp'] as String? ?? '');
-        final DateTime currentTimestamp = DateTime.parse(timestamp);
-
-        if (userId == prevUserId && currentTimestamp.difference(prevTimestamp).inMinutes < 10) {
-          showInfo = false;
+        final String userId = message['ID_Users'] as String? ?? '';
+        final String messageText = message['messageText'] as String? ?? '';
+        final String timestamp = message['timestamp'] as String? ?? '';
+        if (userId.isEmpty || messageText.isEmpty || timestamp.isEmpty) {
+          print('Skipping message due to missing required fields.');
+          continue;
         }
+
+        final sender = await _appwriteService.getUserByID(userId);
+        final String backgroundColor = sender.data['backgroundColor'] as String? ?? 'blue';
+        final String userName = sender.data['Nom'] as String? ?? 'Unknown';
+        final String profilePicUrl = sender.data['URL_PP'] as String? ?? 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg';
+
+        message['backgroundColor'] = backgroundColor;
+        message['userName'] = userName;
+        message['profilePicUrl'] = profilePicUrl;
+
+        bool showInfo = true;
+        if (messages.isNotEmpty) {
+          final prevMessage = messages.last;
+          final String prevUserId = prevMessage['ID_Users'] as String? ?? '';
+          final DateTime prevTimestamp = DateTime.parse(prevMessage['timestamp'] as String? ?? '');
+          final DateTime currentTimestamp = DateTime.parse(timestamp);
+
+          if (userId == prevUserId && currentTimestamp.difference(prevTimestamp).inMinutes < 10) {
+            showInfo = false;
+          }
+        }
+
+        message['showInfo'] = showInfo;
+        messages.add(message);
+        _listKey.currentState?.insertItem(messages.length - 1);
+      }
+      _isFirstLoad = false;
+      _scrollToBottom();
+    } else {
+      for (int i = messagesFromDB.length - 1; i >= 0; i--) {
+        final message = messagesFromDB[i];
+
+        final String userId = message['ID_Users'] as String? ?? '';
+        final String messageText = message['messageText'] as String? ?? '';
+        final String timestamp = message['timestamp'] as String? ?? '';
+        if (userId.isEmpty || messageText.isEmpty || timestamp.isEmpty) {
+          print('Skipping message due to missing required fields.');
+          continue;
+        }
+
+        final sender = await _appwriteService.getUserByID(userId);
+        final String backgroundColor = sender.data['backgroundColor'] as String? ?? 'blue';
+        final String userName = sender.data['Nom'] as String? ?? 'Unknown';
+        final String profilePicUrl = sender.data['URL_PP'] as String? ?? 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg';
+
+        message['backgroundColor'] = backgroundColor;
+        message['userName'] = userName;
+        message['profilePicUrl'] = profilePicUrl;
+
+        bool showInfo = true;
+        if (messages.isNotEmpty) {
+          final prevMessage = messages.first;
+          final String prevUserId = prevMessage['ID_Users'] as String? ?? '';
+          final DateTime prevTimestamp = DateTime.parse(prevMessage['timestamp'] as String? ?? '');
+          final DateTime currentTimestamp = DateTime.parse(timestamp);
+
+          if (userId == prevUserId && currentTimestamp.difference(prevTimestamp).inMinutes < 10) {
+            showInfo = false;
+          }
+        }
+
+        message['showInfo'] = showInfo;
+        messages.insert(0, message);
+        _listKey.currentState?.insertItem(0);
       }
 
-      message['showInfo'] = showInfo;
-      messages.add(message);
-      _listKey.currentState?.insertItem(messages.length - 1);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          double newScrollHeight = _scrollController.position.maxScrollExtent;
+          _scrollController.jumpTo(_scrollController.position.pixels + (newScrollHeight - oldScrollHeight));
+        }
+      });
     }
-    _scrollToBottom();
+
+    setState(() {
+      _loadedMessagesCount += messagesFromDB.length;
+    });
   }
+
 
   Future<void> _loadCurrentUserName() async {
     currentUserName = await _appwriteService.getCurrentUserName();
@@ -259,17 +320,21 @@ class _ConversationState extends State<Conversation> {
       setState(() {
         _isScrollButtonVisible = !isScrolledToBottom;
       });
+
+      if (_scrollController.position.pixels <= _scrollController.position.minScrollExtent + 100 && !_isLoadingMessages) {
+        _isLoadingMessages = true;
+        _loadMessages().then((_) {
+          _isLoadingMessages = false;
+        });
+      }
     }
   }
+
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeOut,
-        );
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
       }
     });
   }
@@ -295,31 +360,24 @@ class _ConversationState extends State<Conversation> {
           Column(
             children: [
               Expanded(
-                child: AnimatedList(
-                  key: _listKey,
-                  initialItemCount: messages.length,
-                  itemBuilder: (context, index, animation) {
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
                     final message = messages[index];
-                    return SlideTransition(
-                      position: Tween<Offset>(
-                        begin: message["isUser"] ? const Offset(-1, 0) : const Offset(1, 0),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                        child: MessageWidget(
-                          isUser: message["isUser"],
-                          messageText: message["messageText"],
-                          profilePicUrl: message["profilePicUrl"] is String ? message["profilePicUrl"] : "",
-                          timestamp: message["timestamp"],
-                          backgroundColor: message["backgroundColor"],
-                          userName: message["userName"],
-                          showInfo: message["showInfo"],
-                        ),
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                      child: MessageWidget(
+                        isUser: message["isUser"],
+                        messageText: message["messageText"],
+                        profilePicUrl: message["profilePicUrl"] is String ? message["profilePicUrl"] : "",
+                        timestamp: message["timestamp"],
+                        backgroundColor: message["backgroundColor"],
+                        userName: message["userName"],
+                        showInfo: message["showInfo"],
                       ),
                     );
                   },
-                  controller: _scrollController,
                 ),
               ),
               Padding(
