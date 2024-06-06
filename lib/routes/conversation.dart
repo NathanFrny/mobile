@@ -106,7 +106,7 @@ class _ConversationState extends State<Conversation> {
         final messageText = newMessage.payload['Contenue'] ?? '';
         final timestamp = newMessage.payload['Date_Heure'] ?? '';
         final profilePicUrl = await _appwriteService.getUserPP(newMessage.payload['ID_Users']) ?? 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg';
-        final backgroundColor = sender.data['backgroundColor'] ?? '#000000';
+        final backgroundColor = sender.data['backgroundColor'] ?? 'blue';
         final userName = sender.data['Nom'];
 
         final newMessageMap = {
