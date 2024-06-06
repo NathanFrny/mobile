@@ -148,28 +148,42 @@ class _ChannelState extends State<Channel> {
               return MouseRegion(
                 onEnter: (_) => setState(() => _hoveringIndex.add(index)),
                 onExit: (_) => setState(() => _hoveringIndex.remove(index)),
-                child: ListTile(
-                  title: Text(channels[index]['name']),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (unreadCount > 0)
-                        CircleAvatar(
-                          radius: 10,
-                          child: Text(
-                            unreadCount.toString(),
-                            style: const TextStyle(fontSize: 12, color: Colors.white),
-                          ),
-                          backgroundColor: Colors.red,
-                        ),
-                      if (isSmallScreen || _hoveringIndex.contains(index))
-                        IconButton(
-                          icon: Icon(Icons.remove_circle, color: Colors.red),
-                          onPressed: () => _removeUserFromChannel(channelId),
-                        ),
-                    ],
+                child: Card(
+                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  elevation: 3.0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
                   ),
-                  onTap: () => _navigateToConversation(context, channels[index]['name'], channelId),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16.0),
+                    title: Text(
+                      channels[index]['name'],
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18.0,
+                      ),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (unreadCount > 0)
+                          CircleAvatar(
+                            radius: 10,
+                            child: Text(
+                              unreadCount.toString(),
+                              style: const TextStyle(fontSize: 12, color: Colors.white),
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        if (isSmallScreen || _hoveringIndex.contains(index))
+                          IconButton(
+                            icon: Icon(Icons.remove_circle, color: Colors.red),
+                            onPressed: () => _removeUserFromChannel(channelId),
+                          ),
+                      ],
+                    ),
+                    onTap: () => _navigateToConversation(context, channels[index]['name'], channelId),
+                  ),
                 ),
               );
             },
