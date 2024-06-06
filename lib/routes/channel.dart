@@ -3,7 +3,8 @@ import 'package:mobile/services/appwrite_service.dart';
 import 'conversation.dart';
 
 class Channel extends StatefulWidget {
-  const Channel({super.key});
+  final ValueNotifier<Map<int, int>> unreadMessages;
+  const Channel({required this.unreadMessages, super.key});
 
   @override
   State<Channel> createState() => _ChannelState();
@@ -40,7 +41,11 @@ class _ChannelState extends State<Channel> {
     }
   }
 
-  void _navigateToConversation(BuildContext context, String channelName) {
+  void _navigateToConversation(BuildContext context, String channelName, int channelId) {
+    widget.unreadMessages.value = {
+      ...widget.unreadMessages.value,
+      channelId: 0,
+    };
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -131,22 +136,43 @@ class _ChannelState extends State<Channel> {
       appBar: AppBar(
         title: const Text('Channels'),
       ),
-      body: ListView.builder(
-        itemCount: channels.length,
-        itemBuilder: (context, index) {
-          return MouseRegion(
-            onEnter: (_) => setState(() => _hoveringIndex.add(index)),
-            onExit: (_) => setState(() => _hoveringIndex.remove(index)),
-            child: ListTile(
-              title: Text(channels[index]['name']),
-              trailing: (isSmallScreen || _hoveringIndex.contains(index))
-                  ? IconButton(
-                icon: Icon(Icons.remove_circle, color: Colors.red),
-                onPressed: () => _removeUserFromChannel(int.parse(channels[index]['id'])),
-              )
-                  : null,
-              onTap: () => _navigateToConversation(context, channels[index]['name']),
-            ),
+      body: ValueListenableBuilder<Map<int, int>>(
+        valueListenable: widget.unreadMessages,
+        builder: (context, unreadMessages, child) {
+          return ListView.builder(
+            itemCount: channels.length,
+            itemBuilder: (context, index) {
+              final channelId = int.parse(channels[index]['id']);
+              final unreadCount = unreadMessages[channelId] ?? 0;
+
+              return MouseRegion(
+                onEnter: (_) => setState(() => _hoveringIndex.add(index)),
+                onExit: (_) => setState(() => _hoveringIndex.remove(index)),
+                child: ListTile(
+                  title: Text(channels[index]['name']),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (unreadCount > 0)
+                        CircleAvatar(
+                          radius: 10,
+                          child: Text(
+                            unreadCount.toString(),
+                            style: const TextStyle(fontSize: 12, color: Colors.white),
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      if (isSmallScreen || _hoveringIndex.contains(index))
+                        IconButton(
+                          icon: Icon(Icons.remove_circle, color: Colors.red),
+                          onPressed: () => _removeUserFromChannel(channelId),
+                        ),
+                    ],
+                  ),
+                  onTap: () => _navigateToConversation(context, channels[index]['name'], channelId),
+                ),
+              );
+            },
           );
         },
       ),
