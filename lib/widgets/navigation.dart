@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mobile/routes/channel.dart';
 import 'package:mobile/routes/home.dart';
 import 'package:mobile/routes/notification.dart';
+import 'package:mobile/routes/channel.dart' as channel;
+import 'package:mobile/routes/notification.dart' as notification;
 import 'package:mobile/services/appwrite_service.dart';
 
 class Navigation extends StatefulWidget {
@@ -79,7 +81,8 @@ class _NavigationState extends State<Navigation> {
       bottomNavigationBar: ValueListenableBuilder(
         valueListenable: unreadMessages,
         builder: (context, Map<int, int> value, child) {
-          int totalUnreadMessages = value.values.fold(0, (sum, count) => sum + count);
+          int totalUnreadMessages =
+              value.values.fold(0, (sum, count) => sum + count);
           return NavigationBar(
             onDestinationSelected: (int index) {
               setState(() {
@@ -96,14 +99,18 @@ class _NavigationState extends State<Navigation> {
               ),
               NavigationDestination(
                 icon: Badge(
-                  label: totalUnreadMessages > 0 ? Text(totalUnreadMessages.toString()) : null,
+                  label: totalUnreadMessages > 0
+                      ? Text(totalUnreadMessages.toString())
+                      : null,
                   child: Icon(Icons.notifications_sharp),
                 ),
                 label: 'Notifications',
               ),
               NavigationDestination(
                 icon: Badge(
-                  label: totalUnreadMessages > 0 ? Text(totalUnreadMessages.toString()) : null,
+                  label: totalUnreadMessages > 0
+                      ? Text(totalUnreadMessages.toString())
+                      : null,
                   child: Icon(Icons.messenger_sharp),
                 ),
                 label: 'Channels',
@@ -114,13 +121,15 @@ class _NavigationState extends State<Navigation> {
       ),
       body: <Widget>[
         const Home(),
-        NotificationsPage(
+        notification.NotificationsPage(
           unreadMessages: unreadMessages.value,
           channels: channels,
           onChannelTap: _onChannelTap,
           appwriteService: _appwriteService,
         ),
-        Channel(unreadMessages: unreadMessages),
+        // ...
+
+        channel.Channel(unreadMessages: unreadMessages),
       ][currentPageIndex],
     );
   }

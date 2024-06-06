@@ -13,7 +13,14 @@ class _ColorPickerState extends State<ColorPicker> {
   String currentColor = '';
 
   final List<String> colors = [
-    'green', 'blue', 'yellow', 'red', 'purple', 'orange', 'pink', 'black'
+    'green',
+    'blue',
+    'yellow',
+    'red',
+    'purple',
+    'orange',
+    'pink',
+    'black'
   ];
 
   final Map<String, Color> colorMap = {

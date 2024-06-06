@@ -26,13 +26,16 @@ class NotificationsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final validNotifications = unreadMessages.entries
-        .where((entry) => entry.value > 0)
-        .toList();
+    final validNotifications =
+        unreadMessages.entries.where((entry) => entry.value > 0).toList();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Notifications'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => appwriteService.confirmLogout(context),
+        ),
       ),
       body: ListView.builder(
         itemCount: validNotifications.length,
@@ -40,7 +43,7 @@ class NotificationsPage extends StatelessWidget {
           final channelId = validNotifications[index].key;
           final unreadCount = validNotifications[index].value;
           final channel = channels.firstWhere(
-                (channel) => int.parse(channel['id']) == channelId,
+            (channel) => int.parse(channel['id']) == channelId,
             orElse: () => <String, dynamic>{},
           );
 

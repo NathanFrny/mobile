@@ -1,5 +1,3 @@
-// home.dart
-
 import 'package:flutter/material.dart';
 import 'package:mobile/services/appwrite_service.dart';
 import 'package:mobile/widgets/color_picker.dart';
@@ -131,6 +129,10 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => _appwriteService.confirmLogout(context),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

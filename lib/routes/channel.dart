@@ -41,7 +41,8 @@ class _ChannelState extends State<Channel> {
     }
   }
 
-  void _navigateToConversation(BuildContext context, String channelName, int channelId) {
+  void _navigateToConversation(
+      BuildContext context, String channelName, int channelId) {
     widget.unreadMessages.value = {
       ...widget.unreadMessages.value,
       channelId: 0,
@@ -102,7 +103,8 @@ class _ChannelState extends State<Channel> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        final TextEditingController _channelNameController = TextEditingController();
+        final TextEditingController _channelNameController =
+            TextEditingController();
         return AlertDialog(
           title: const Text('Créer un channel'),
           content: TextField(
@@ -135,6 +137,10 @@ class _ChannelState extends State<Channel> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Channels'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => _appwriteService.confirmLogout(context),
+        ),
       ),
       body: ValueListenableBuilder<Map<int, int>>(
         valueListenable: widget.unreadMessages,
@@ -149,7 +155,8 @@ class _ChannelState extends State<Channel> {
                 onEnter: (_) => setState(() => _hoveringIndex.add(index)),
                 onExit: (_) => setState(() => _hoveringIndex.remove(index)),
                 child: Card(
-                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 16.0),
                   elevation: 3.0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10.0),
@@ -171,7 +178,8 @@ class _ChannelState extends State<Channel> {
                             radius: 10,
                             child: Text(
                               unreadCount.toString(),
-                              style: const TextStyle(fontSize: 12, color: Colors.white),
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.white),
                             ),
                             backgroundColor: Colors.red,
                           ),
@@ -182,7 +190,8 @@ class _ChannelState extends State<Channel> {
                           ),
                       ],
                     ),
-                    onTap: () => _navigateToConversation(context, channels[index]['name'], channelId),
+                    onTap: () => _navigateToConversation(
+                        context, channels[index]['name'], channelId),
                   ),
                 ),
               );
