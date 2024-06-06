@@ -16,6 +16,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
 
   Future<void> _registerUser() async {
     if (_passwordController.text != _confirmPasswordController.text) {
@@ -64,14 +66,41 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Mot de passe'),
-              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Mot de passe',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
+                  },
+                ),
+              ),
+              obscureText: !_isPasswordVisible,
             ),
             TextField(
               controller: _confirmPasswordController,
-              decoration:
-                  const InputDecoration(labelText: 'Confirmer le mot de passe'),
-              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Confirmer le mot de passe',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isConfirmPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                    });
+                  },
+                ),
+              ),
+              obscureText: !_isConfirmPasswordVisible,
             ),
             Padding(
               padding: const EdgeInsets.only(top: 16.0),
