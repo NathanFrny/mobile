@@ -57,9 +57,12 @@ class _LoginPageState extends State<LoginPage> {
               decoration: const InputDecoration(labelText: 'Mot de passe'),
               obscureText: true,
             ),
-            ElevatedButton(
-              onPressed: _loginUser,
-              child: const Text('Connexion'),
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: ElevatedButton(
+                onPressed: _loginUser,
+                child: const Text('Connexion'),
+              ),
             ),
           ],
         ),
