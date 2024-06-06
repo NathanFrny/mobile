@@ -1,6 +1,8 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:mobile/main.dart';
 
 class AppwriteService {
   late Client _client;
@@ -15,7 +17,10 @@ class AppwriteService {
   final collectionChannelsID = '664a23ae6c741e56b1a7';
 
   AppwriteService() {
-    _client = Client().setEndpoint(endPoint).setProject(projetID).setSelfSigned(status: true);
+    _client = Client()
+        .setEndpoint(endPoint)
+        .setProject(projetID)
+        .setSelfSigned(status: true);
     _account = Account(_client);
     _databases = Databases(_client);
     _realtime = Realtime(_client);
@@ -23,9 +28,8 @@ class AppwriteService {
 
   // Abonnement en temps réel aux changements dans la collection de messages
   void subscribeToMessages(Function(RealtimeMessage) callback) {
-    final subscription = _realtime.subscribe([
-      'databases.$databaseID.collections.$collectionMessagesID.documents'
-    ]);
+    final subscription = _realtime.subscribe(
+        ['databases.$databaseID.collections.$collectionMessagesID.documents']);
 
     // Observer permettant à des callbacks de s'abonner
     subscription.stream.listen((event) {
@@ -62,7 +66,8 @@ class AppwriteService {
           'Nom': name,
           'Date_creation': DateTime.now().toIso8601String(),
           'Channel': [],
-          'URL_PP': 'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg',
+          'URL_PP':
+              'https://static.vecteezy.com/system/resources/thumbnails/020/765/399/small/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg',
           'backgroundColor': 'blue',
         },
       );
@@ -113,6 +118,57 @@ class AppwriteService {
     }
   }
 
+  // Vérification de la session actuelle
+  Future<bool> checkSession() async {
+    try {
+      await _account.get();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Redirection vers la page de connexion et suppression de la session actuelle
+  Future<void> logout(BuildContext context) async {
+    try {
+      await deleteSession();
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const MyApp()),
+        (Route<dynamic> route) => false,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur de déconnexion : $e')),
+      );
+    }
+  }
+
+  Future<void> confirmLogout(BuildContext context) async {
+    bool? shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmation de déconnexion'),
+          content: const Text('Voulez-vous vraiment vous déconnecter ?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Déconnexion'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldLogout == true) {
+      await logout(context);
+    }
+  }
+
   // ---------------------------
   //  Gestion des Utilisateurs
   // ---------------------------
@@ -158,7 +214,8 @@ class AppwriteService {
         throw Exception('Utilisateur non trouvé');
       }
     } catch (e) {
-      throw Exception('Erreur lors de la récupération de l\'ID utilisateur : $e');
+      throw Exception(
+          'Erreur lors de la récupération de l\'ID utilisateur : $e');
     }
   }
 
@@ -296,10 +353,10 @@ class AppwriteService {
         },
       );
     } catch (e) {
-      throw Exception('Erreur lors de la mise à jour de la couleur de fond de l\'utilisateur : $e');
+      throw Exception(
+          'Erreur lors de la mise à jour de la couleur de fond de l\'utilisateur : $e');
     }
   }
-
 
   // Ajouts d'un channel à la liste des channels d'un utilisateur dans la base de données Users
   // Param :
@@ -363,7 +420,6 @@ class AppwriteService {
   Future<void> createMessage(int messageID, String userID, String dateHeure,
       String contenu, int channelID) async {
     try {
-
       await _databases.createDocument(
         databaseId: databaseID,
         collectionId: collectionMessagesID,
@@ -384,7 +440,8 @@ class AppwriteService {
   // Récupérer les messages d'un channel en fonction de l'ID du channel
   // Params:
   // - channelId: l'id du channel
-  Future<List<Map<String, dynamic>>> getMessagesByChannelId(int channelId, {int limit = 20, int offset = 0}) async {
+  Future<List<Map<String, dynamic>>> getMessagesByChannelId(int channelId,
+      {int limit = 20, int offset = 0}) async {
     try {
       final response = await _databases.listDocuments(
         databaseId: databaseID,
@@ -419,7 +476,8 @@ class AppwriteService {
   }
 
   // This function should be defined elsewhere (assuming it builds the full message object with profile picture URL)
-  Future<Map<String, dynamic>> buildCompleteMessage({required Map<String, dynamic> message, required String userId}) async {
+  Future<Map<String, dynamic>> buildCompleteMessage(
+      {required Map<String, dynamic> message, required String userId}) async {
     final profilePicUrl = await getUserPP(userId);
     return {
       ...message,
@@ -441,7 +499,8 @@ class AppwriteService {
       );
       return response.total;
     } catch (e) {
-      throw Exception('Erreur lors de la récupération du nombre total de messages pour le channel $channelId : $e');
+      throw Exception(
+          'Erreur lors de la récupération du nombre total de messages pour le channel $channelId : $e');
     }
   }
 
@@ -454,7 +513,8 @@ class AppwriteService {
       );
       return response.total;
     } catch (e) {
-      throw Exception('Erreur lors de la récupération du nombre total de messages : $e');
+      throw Exception(
+          'Erreur lors de la récupération du nombre total de messages : $e');
     }
   }
 
@@ -473,10 +533,11 @@ class AppwriteService {
       if (response.documents.isNotEmpty) {
         return int.parse(response.documents.first.$id);
       } else {
-        return 0;  // Retourner 0 si aucun channel n'existe
+        return 0; // Retourner 0 si aucun channel n'existe
       }
     } catch (e) {
-      throw Exception('Erreur lors de la récupération de l\'ID du message le plus élevé : $e');
+      throw Exception(
+          'Erreur lors de la récupération de l\'ID du message le plus élevé : $e');
     }
   }
 
@@ -503,10 +564,10 @@ class AppwriteService {
 
       print('Tous les messages du channel $channelId ont été supprimés.');
     } catch (e) {
-      throw Exception('Erreur lors de la suppression des messages du channel : $e');
+      throw Exception(
+          'Erreur lors de la suppression des messages du channel : $e');
     }
   }
-
 
 //---------------------------
 //  Gestion des channels
@@ -541,7 +602,8 @@ class AppwriteService {
       );
       return response.total;
     } catch (e) {
-      throw Exception('Erreur lors de la récupération du nombre total de channels : $e');
+      throw Exception(
+          'Erreur lors de la récupération du nombre total de channels : $e');
     }
   }
 
@@ -560,13 +622,13 @@ class AppwriteService {
       if (response.documents.isNotEmpty) {
         return int.parse(response.documents.first.$id);
       } else {
-        return 0;  // Retourner 0 si aucun channel n'existe
+        return 0; // Retourner 0 si aucun channel n'existe
       }
     } catch (e) {
-      throw Exception('Erreur lors de la récupération de l\'ID de channel le plus élevé : $e');
+      throw Exception(
+          'Erreur lors de la récupération de l\'ID de channel le plus élevé : $e');
     }
   }
-
 
   // Récupérer un channel en fonction de son ID
   // Param :
@@ -601,7 +663,8 @@ class AppwriteService {
           Query.equal('Nom', channelName),
         ],
       );
-      print('Réponse de la base de données: ${response.documents.length} documents trouvés');
+      print(
+          'Réponse de la base de données: ${response.documents.length} documents trouvés');
 
       for (var document in response.documents) {
         List<dynamic> users = document.data['UsersID'];
@@ -612,7 +675,8 @@ class AppwriteService {
 
       throw Exception('Channel not found');
     } catch (e) {
-      throw Exception('Erreur lors de la récupération de l\'ID du channel : $e');
+      throw Exception(
+          'Erreur lors de la récupération de l\'ID du channel : $e');
     }
   }
 
@@ -648,7 +712,8 @@ class AppwriteService {
 
       print('Utilisateur ajouté au channel avec succès.');
     } catch (e) {
-      throw Exception('Erreur lors de l\'ajout de l\'utilisateur au channel : $e');
+      throw Exception(
+          'Erreur lors de l\'ajout de l\'utilisateur au channel : $e');
     }
   }
 
@@ -680,7 +745,6 @@ class AppwriteService {
           'Erreur lors de la suppression de l\'utilisateur du channel : $e');
     }
   }
-
 
   // Changement du nom d'un channel dans la base de données Channels
   // Param :
