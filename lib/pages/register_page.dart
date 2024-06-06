@@ -14,8 +14,17 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _pseudoController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   Future<void> _registerUser() async {
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Les mots de passe ne correspondent pas')),
+      );
+      return;
+    }
+
     try {
       await _appwriteService.registerUser(
         _emailController.text,
@@ -58,9 +67,18 @@ class _RegisterPageState extends State<RegisterPage> {
               decoration: const InputDecoration(labelText: 'Mot de passe'),
               obscureText: true,
             ),
-            ElevatedButton(
-              onPressed: _registerUser,
-              child: const Text('S\'inscrire'),
+            TextField(
+              controller: _confirmPasswordController,
+              decoration:
+                  const InputDecoration(labelText: 'Confirmer le mot de passe'),
+              obscureText: true,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0),
+              child: ElevatedButton(
+                onPressed: _registerUser,
+                child: const Text('S\'inscrire'),
+              ),
             ),
           ],
         ),
