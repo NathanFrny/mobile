@@ -115,6 +115,9 @@ Pour la partie backend, nous avons utilisé **Appwrite**. Nous avons hébergé l
 Pour réaliser l'envoi des messages, nous avons utilisés une **realtime database** avec appwrite. L'utilisateurs s'"**abonne**" à la table "messages" dans la base de données, dès lors qu'un message en envoyé,  
 ce dernier est **notifié** et peut afficher le message en **temps réel** dans son channel.  
 Le fonctionnement est similaire pour les notifications.
+De plus, pour éviter de charger trop de messages, lorsqu'on arrive sur un channel on ne charge que les 20 derniers messages.  
+Lorsqu'on rescroll vers le haut, on charge les messages précédents ainsi de suite.  
+Un bouton permet de rapidement retourner tout en bas de la conversations.
 
 Des maquettes sur **figma** on préalablement était réalisées pour avoir une idée de l'application.
 
