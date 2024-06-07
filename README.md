@@ -62,7 +62,9 @@ On y retrouve la **photo de profil** de l'utilisateur ainsi que son **pseudo**.
 On peut **modifier** les deux informations en cliquant/appuyant dessus.
 
 De plus, nous avons ajouté la possibilités de **modifier** la **couleur** **d'arrière-plan des messages** de l'utilisateur.  
-Nous offrons le choix entre huit couleur, il suffit d'appuyer pour changer de couleur.
+Nous offrons le choix entre huit couleur, il suffit d'appuyer pour changer de couleur.  
+
+**Remarque: Les photos de profil fonctionne avec URL web, lorsqu'une image ne peut pas être chargée par l'application, cette dernière est blanche.**
 
 ### Notifications
 
@@ -112,12 +114,12 @@ Les messages possèdent les features suivantes :
 Tout le développement mobile a été réalisé avec **flutter**.  
 Pour la partie backend, nous avons utilisé **Appwrite**. Nous avons hébergé le service **localement** sur un Raspberry PI.
 
-Pour réaliser l'envoi des messages, nous avons utilisés une **realtime database** avec appwrite. L'utilisateurs s'"**abonne**" à la table "messages" dans la base de données, dès lors qu'un message en envoyé,  
+Pour réaliser l'envoi des messages, nous avons utilisé une **realtime database** avec appwrite. L'utilisateurs s'"**abonne**" à la table "messages" dans la base de données, dès lors qu'un message en envoyé,  
 ce dernier est **notifié** et peut afficher le message en **temps réel** dans son channel.  
 Le fonctionnement est similaire pour les notifications.
 De plus, pour éviter de charger trop de messages, lorsqu'on arrive sur un channel on ne charge que les 20 derniers messages.  
 Lorsqu'on rescroll vers le haut, on charge les messages précédents ainsi de suite.  
-Un bouton permet de rapidement retourner tout en bas de la conversations.
+Un bouton permet de rapidement retourner tout en bas de la conversation.
 
 Des maquettes sur **figma** on préalablement était réalisées pour avoir une idée de l'application.
 
